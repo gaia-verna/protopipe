@@ -62,6 +62,8 @@ PreparedEvent = namedtuple(
         "calibration_status",
         "mc_phe_image",
         "n_pixel_dict",
+	"truncated_image",
+	"leak_reco",
         "hillas_dict",
         "hillas_dict_reco",
         "n_tels",
@@ -901,6 +903,8 @@ class EventPreparer:
             mc_phe_image = {}
             max_signals = {}
             n_pixel_dict = {}
+	    leak_reco={}
+            truncated_image={}
             hillas_dict_reco = {}  # for direction reconstruction
             hillas_dict = {}  # for discrimination
             n_tels = {
@@ -956,6 +960,7 @@ class EventPreparer:
                     image_biggest, mask_reco = self.cleaner_reco.clean_image(
                         pmt_signal, camera
                     )
+
                     # find all islands using this cleaning
                     num_islands, labels = number_of_islands(camera, mask_reco)
 
@@ -964,15 +969,19 @@ class EventPreparer:
                         # to make Hillas parametrization faster
                         camera_biggest = camera[mask_reco]
                         image_biggest = image_biggest[mask_reco]
+			leak_reco[tel_id]=leakage(camera,pmt_signal, mask_reco)
+
                         if save_images is True:
                         	dl1_phe_image_mask_reco[tel_id] = mask_reco
-                   
+
                     elif num_islands > 1:  # if more islands survived..
                         # ...find the biggest one
                         mask_biggest = largest_island(labels)
                         # and also reduce dimensions
                         camera_biggest = camera[mask_biggest]
                         image_biggest = image_biggest[mask_biggest]
+			leak_reco[tel_id]=leakage(camera,pmt_signal, mask_biggest)
+
                         if save_images is True:
                         	dl1_phe_image_mask_reco[tel_id] = mask_biggest
                         	
@@ -992,7 +1001,7 @@ class EventPreparer:
 
                     # NOTE: the next check shouldn't be necessary if we keep
                     # all the isolated pixel clusters, but for now the
-                    # two cleanings are set the same in analysis.yml because
+                    # two cleanings are set the same in analysis.yaml because
                     # the performance of the extended one has never been really
                     # studied in model estimation.
                     # (This is a nice way to ask for volunteers :P)
@@ -1070,6 +1079,7 @@ class EventPreparer:
                         moments_reco = hillas_parameters(
                             camera_biggest, image_biggest
                         )  # for geometry (eg direction)
+						
                         moments = hillas_parameters(
                             camera_extended, image_extended
                         )  # for discrimination and energy reconstruction
@@ -1080,11 +1090,13 @@ class EventPreparer:
                         # won't be very useful: skip
                         if self.image_cutflow.cut("poor moments", moments_reco):
                             continue
-
+			
+			truncated_image[tel_id]=False
                         if self.image_cutflow.cut(
                             "close to the edge", moments_reco, camera.cam_id
                         ):
-                            continue
+			    truncated_image[tel_id]=True
+                            pass
 
                         if self.image_cutflow.cut("bad ellipticity", moments_reco):
                             continue
@@ -1173,7 +1185,9 @@ class EventPreparer:
                 calibration_status=calibration_status,
                 mc_phe_image=mc_phe_image,
                 n_pixel_dict=n_pixel_dict,
-                hillas_dict=hillas_dict,
+		truncated_image=truncated_image,		
+                leak_reco=leak_reco,
+		hillas_dict=hillas_dict,
                 hillas_dict_reco=hillas_dict_reco,
                 n_tels=n_tels,
                 tot_signal=tot_signal,

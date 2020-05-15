@@ -171,6 +171,13 @@ def main():
         psi = tb.Float32Col(dflt=1, pos=42)
         psi_reco = tb.Float32Col(dflt=1, pos=43)
         sum_signal_cam_reco = tb.Float32Col(dflt=1, pos=44)
+	truncated_image= tb.BoolCol(dflt=False, pos=45),
+	n_truncated = tb.Int16Col(dflt=0, pos=46)
+	pixels_width_1 = tb.Float32Col(dflt=1, pos=47)
+        pixels_width_2 = tb.Float32Col(dflt=1, pos=48)
+        intensity_width_1 = tb.Float32Col(dflt=1, pos=49)
+        intensity_width_2 = tb.Float32Col(dflt=1, pos=50)
+
 
     feature_outfile = tb.open_file(args.outfile, mode="w")
     feature_table = {}
@@ -200,6 +207,8 @@ def main():
             calibration_status,
             mc_phe_image,
             n_pixel_dict,
+	    truncated_fit,
+	    leak_reco,
             hillas_dict,
             hillas_dict_reco,
             n_tels,
@@ -212,6 +221,8 @@ def main():
 
             # Angular quantities
             run_array_direction = event.mcheader.run_array_direction
+
+	    n_truncated = int(sum(truncated.values()))
 
             xi = angular_separation(
                 event.mc.az, event.mc.alt, reco_result.az, reco_result.alt
@@ -235,7 +246,9 @@ def main():
 
             reco_energy = np.nan
             reco_energy_tel = dict()
-
+		
+	    leak = leak_reco[tel_id]
+	
             # Not optimal at all, two loop on tel!!!
             # For energy estimation
             if args.estimate_energy is True:
@@ -353,6 +366,12 @@ def main():
                 ).value
                 feature_events[cam_id]["psi_reco"] = moments_reco.psi.to("deg").value
                 feature_events[cam_id]["sum_signal_cam_reco"] = moments_reco.intensity
+		feature_events[cam_id]["truncated"] = truncated[tel_id]
+                feature_events[cam_id]["n_truncated"] = n_truncated
+		feature_events[cam_id]["pixels_width_1"] = leak.leakage1_pixel
+                feature_events[cam_id]["pixels_width_2"] = leak.leakage2_pixel
+                feature_events[cam_id]["intensity_width_1"] = leak.leakage1_intensity
+                feature_events[cam_id]["intensity_width_2"] = leak.leakage2_intensity
 
                 feature_events[cam_id].append()
 
