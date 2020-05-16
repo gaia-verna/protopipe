@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import numpy as np
 from astropy.coordinates.angle_utilities import angular_separation
+from astropy.io.ascii import Csv
+
 from sys import exit
 from glob import glob
 import signal
@@ -168,15 +170,18 @@ def main():
         kurtosis_reco = tb.Float32Col(dflt=1, pos=39)
         width_reco = tb.Float32Col(dflt=1, pos=40)
         length_reco = tb.Float32Col(dflt=1, pos=41)
-        psi = tb.Float32Col(dflt=1, pos=42)
-        psi_reco = tb.Float32Col(dflt=1, pos=43)
-        sum_signal_cam_reco = tb.Float32Col(dflt=1, pos=44)
-	truncated_image= tb.BoolCol(dflt=False, pos=45),
-	n_truncated = tb.Int16Col(dflt=0, pos=46)
-	pixels_width_1 = tb.Float32Col(dflt=1, pos=47)
-        pixels_width_2 = tb.Float32Col(dflt=1, pos=48)
-        intensity_width_1 = tb.Float32Col(dflt=1, pos=49)
-        intensity_width_2 = tb.Float32Col(dflt=1, pos=50)
+        cog_r_reco = tb.Float32Col(dflt=1, pos=42)
+        cog_x_reco = tb.Float32Col(dflt=1, pos=43)
+        cog_y_reco = tb.Float32Col(dflt=1, pos=44)
+        psi = tb.Float32Col(dflt=1, pos=45)
+        psi_reco = tb.Float32Col(dflt=1, pos=46)
+        sum_signal_cam_reco = tb.Float32Col(dflt=1, pos=47)
+        truncated_image= tb.BoolCol(dflt=False, pos=48)
+        n_truncated = tb.Int16Col(dflt=0, pos=49)
+        pixels_width_1 = tb.Float32Col(dflt=1, pos=50)
+        pixels_width_2 = tb.Float32Col(dflt=1, pos=51)
+        intensity_width_1 = tb.Float32Col(dflt=1, pos=52)
+        intensity_width_2 = tb.Float32Col(dflt=1, pos=53)
 
 
     feature_outfile = tb.open_file(args.outfile, mode="w")
@@ -199,7 +204,7 @@ def main():
 
         # loop that cleans and parametrises the images and performs the
         # reconstruction for each event
-        for (
+        for(
             event,
             dl1_phe_image,
             dl1_phe_image_mask_reco,
@@ -207,7 +212,7 @@ def main():
             calibration_status,
             mc_phe_image,
             n_pixel_dict,
-	    truncated_fit,
+	    truncated_image,
 	    leak_reco,
             hillas_dict,
             hillas_dict_reco,
@@ -219,10 +224,13 @@ def main():
             impact_dict,
         ) in preper.prepare_event(source, save_images=args.save_images):
 
+            # Run
+            n_run=event.r0.obs_id
+
             # Angular quantities
             run_array_direction = event.mcheader.run_array_direction
 
-	    n_truncated = int(sum(truncated.values()))
+            n_truncated = int(sum(truncated_image.values()))
 
             xi = angular_separation(
                 event.mc.az, event.mc.alt, reco_result.az, reco_result.alt
@@ -246,8 +254,6 @@ def main():
 
             reco_energy = np.nan
             reco_energy_tel = dict()
-		
-	    leak = leak_reco[tel_id]
 	
             # Not optimal at all, two loop on tel!!!
             # For energy estimation
@@ -298,6 +304,7 @@ def main():
                 moments = hillas_dict[tel_id]
                 ellipticity = moments.width / moments.length
 
+                leak = leak_reco[tel_id]
                 # Write to file also the Hillas parameters that have been used
                 # to calculate reco_results
 
@@ -364,11 +371,14 @@ def main():
                 feature_events[cam_id]["length_reco"] = moments_reco.length.to(
                     "m"
                 ).value
+                feature_events[cam_id]["cog_r_reco"] = moments_reco.r.to("m").value
+                feature_events[cam_id]["cog_x_reco"] = moments_reco.x.to("m").value
+                feature_events[cam_id]["cog_y_reco"] = moments_reco.y.to("m").value
                 feature_events[cam_id]["psi_reco"] = moments_reco.psi.to("deg").value
                 feature_events[cam_id]["sum_signal_cam_reco"] = moments_reco.intensity
-		feature_events[cam_id]["truncated"] = truncated[tel_id]
+                feature_events[cam_id]["truncated_image"] = truncated_image[tel_id]
                 feature_events[cam_id]["n_truncated"] = n_truncated
-		feature_events[cam_id]["pixels_width_1"] = leak.leakage1_pixel
+                feature_events[cam_id]["pixels_width_1"] = leak.leakage1_pixel
                 feature_events[cam_id]["pixels_width_2"] = leak.leakage2_pixel
                 feature_events[cam_id]["intensity_width_1"] = leak.leakage1_intensity
                 feature_events[cam_id]["intensity_width_2"] = leak.leakage2_intensity
@@ -405,6 +415,11 @@ def main():
             table.flush()
 
     evt_cutflow()
+    evt_table=evt_cutflow.get_table()
+    evt_table.remove_column('Efficiency')
+    evt_table.add_row(['Run',n_run])
+    evt_table.write('./run'+str(n_run)+'_EventCut_Table.csv')
+
 
     # Catch specific cases
     triggered_events = evt_cutflow.cuts["min2Tels trig"][1]
@@ -417,6 +432,11 @@ def main():
         )
     else:
         img_cutflow()
+        img_table=img_cutflow.get_table()
+        img_table.remove_column('Efficiency')
+        img_table.add_row(['Run',n_run]) 
+        img_table.write('./run'+str(n_run)+'_ImageCut_Table.csv')
+
         if reconstructed_events == 0:
             print(
                 "\033[93m WARNING: None of the triggered events have been "

@@ -22,7 +22,7 @@ from ctapipe.calib import CameraCalibrator
 from ctapipe.calib.camera.gainselection import GainSelector
 
 # from ctapipe.image.extractor import LocalPeakWindowSum
-from ctapipe.image import hillas
+from ctapipe.image import hillas, leakage
 from ctapipe.image.cleaning import tailcuts_clean
 from ctapipe.utils.CutFlow import CutFlow
 from ctapipe.coordinates import GroundFrame
@@ -903,7 +903,7 @@ class EventPreparer:
             mc_phe_image = {}
             max_signals = {}
             n_pixel_dict = {}
-	    leak_reco={}
+            leak_reco={}
             truncated_image={}
             hillas_dict_reco = {}  # for direction reconstruction
             hillas_dict = {}  # for discrimination
@@ -969,10 +969,10 @@ class EventPreparer:
                         # to make Hillas parametrization faster
                         camera_biggest = camera[mask_reco]
                         image_biggest = image_biggest[mask_reco]
-			leak_reco[tel_id]=leakage(camera,pmt_signal, mask_reco)
+                        leak_reco[tel_id]=leakage(camera,pmt_signal, mask_reco)
 
                         if save_images is True:
-                        	dl1_phe_image_mask_reco[tel_id] = mask_reco
+                                dl1_phe_image_mask_reco[tel_id] = mask_reco
 
                     elif num_islands > 1:  # if more islands survived..
                         # ...find the biggest one
@@ -980,7 +980,7 @@ class EventPreparer:
                         # and also reduce dimensions
                         camera_biggest = camera[mask_biggest]
                         image_biggest = image_biggest[mask_biggest]
-			leak_reco[tel_id]=leakage(camera,pmt_signal, mask_biggest)
+                        leak_reco[tel_id]=leakage(camera,pmt_signal, mask_biggest)
 
                         if save_images is True:
                         	dl1_phe_image_mask_reco[tel_id] = mask_biggest
@@ -1090,16 +1090,16 @@ class EventPreparer:
                         # won't be very useful: skip
                         if self.image_cutflow.cut("poor moments", moments_reco):
                             continue
-			
-			truncated_image[tel_id]=False
+                        
+                        if self.image_cutflow.cut("bad ellipticity", moments_reco):
+                            continue
+                        
+                        truncated_image[tel_id]=False
                         if self.image_cutflow.cut(
                             "close to the edge", moments_reco, camera.cam_id
                         ):
-			    truncated_image[tel_id]=True
+                            truncated_image[tel_id]=True
                             pass
-
-                        if self.image_cutflow.cut("bad ellipticity", moments_reco):
-                            continue
 
                     except (FloatingPointError, hillas.HillasParameterizationError):
                         continue
@@ -1162,7 +1162,6 @@ class EventPreparer:
                             (core_ground.x - tel_ground.x) ** 2
                             + (core_ground.y - tel_ground.y) ** 2
                         )
-
             except Exception as e:
                 print("exception in reconstruction:", e)
                 raise
@@ -1185,7 +1184,7 @@ class EventPreparer:
                 calibration_status=calibration_status,
                 mc_phe_image=mc_phe_image,
                 n_pixel_dict=n_pixel_dict,
-		truncated_image=truncated_image,		
+                truncated_image=truncated_image,		
                 leak_reco=leak_reco,
 		hillas_dict=hillas_dict,
                 hillas_dict_reco=hillas_dict_reco,
