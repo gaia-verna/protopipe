@@ -418,7 +418,7 @@ def main():
     evt_table=evt_cutflow.get_table()
     evt_table.remove_column('Efficiency')
     evt_table.add_row(['Run',n_run])
-    evt_table.write('./run'+str(n_run)+'_EventCut_Table.csv')
+    evt_table.write('EventCut_Table_run'+str(n_run)+'.csv')
 
 
     # Catch specific cases
@@ -435,7 +435,7 @@ def main():
         img_table=img_cutflow.get_table()
         img_table.remove_column('Efficiency')
         img_table.add_row(['Run',n_run]) 
-        img_table.write('./run'+str(n_run)+'_ImageCut_Table.csv')
+        img_table.write('ImageCut_Table_run'+str(n_run)+'.csv')
 
         if reconstructed_events == 0:
             print(
@@ -443,7 +443,6 @@ def main():
                 "properly reconstructed by the selected telescopes!\n"
                 "DL1 file will be empty! \033[0m"
             )
-
 
 if __name__ == "__main__":
     main()
