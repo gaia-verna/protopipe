@@ -21,7 +21,6 @@ ana_config = resource_filename(
 
 def test_write_dl1():
     """Very bare test to see if the script reaches the end correctly.
-
     WARNING: some of the cuts in the example config file are not optimized for
     cameras other than LSTCam and NectarCam.
     In any case, it is expected that in absence of fatal bugs, the script
@@ -35,3 +34,5 @@ def test_write_dl1():
         -f {path.basename(GAMMA_TEST_LARGE)}"
     )
     assert exit_status == 0
+
+test_write_dl1()
