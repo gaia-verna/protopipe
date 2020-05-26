@@ -5,6 +5,7 @@ import numpy as np
 from glob import glob
 import signal
 from astropy.coordinates.angle_utilities import angular_separation
+from astropy.io.ascii import Csv
 import tables as tb
 
 # ctapipe
@@ -76,20 +77,30 @@ def main():
 
     # Get the IDs of the involved telescopes and associated cameras together
     # with the equivalent focal lengths from the first event
-    allowed_tels, cams_and_foclens = prod3b_array(filenamelist[0], site, array)
+    
+    allowed_tels, cams_and_foclens, subarray = prod3b_array(filenamelist[0], site, array)
 
     # keeping track of events and where they were rejected
     evt_cutflow = CutFlow("EventCutFlow")
     img_cutflow = CutFlow("ImageCutFlow")
 
     # Event preparer
+    #preper = EventPreparer(
+    #   config=cfg,
+    #   cams_and_foclens=cams_and_foclens,
+    #   mode=args.mode,
+    #   event_cutflow=evt_cutflow,
+    #   image_cutflow=img_cutflow,
+    #)
+
     preper = EventPreparer(
         config=cfg,
+        subarray=subarray,
         cams_and_foclens=cams_and_foclens,
         mode=args.mode,
         event_cutflow=evt_cutflow,
         image_cutflow=img_cutflow,
-    )
+      )
 
     # Regressor and classifier methods
     regressor_method = cfg["EnergyRegressor"]["method_name"]
@@ -172,6 +183,7 @@ def main():
         reco_core_y = tb.Float32Col(dflt=np.nan, pos=20)
         mc_core_x = tb.Float32Col(dflt=np.nan, pos=21)
         mc_core_y = tb.Float32Col(dflt=np.nan, pos=22)
+        NTels_truncated = tb.Int16Col(dflt=0, pos=23)
 
     reco_outfile = tb.open_file(
         mode="w",
@@ -206,8 +218,13 @@ def main():
         for (
             event,
             dl1_phe_image,
+            dl1_phe_image_mask_reco,
+            dl1_phe_image_1stPass,
+            calibration_status,
             mc_phe_image,
             n_pixel_dict,
+	    truncated_image,
+	    leak_reco,
             hillas_dict,
             hillas_dict_reco,
             n_tels,
@@ -217,6 +234,9 @@ def main():
             reco_result,
             impact_dict,
         ) in preper.prepare_event(source):
+
+            # Run
+            n_run=event.r0.obs_id
 
             # Angular quantities
             run_array_direction = event.mcheader.run_array_direction
@@ -343,6 +363,7 @@ def main():
                     + n_tels["SST_ASTRI_ASTRICam"]
                     + n_tels["SST_GCT_CHEC"]
                 )
+                reco_event["NTels_truncated"] = int(sum(truncated_image.values()))
                 reco_event["reco_energy"] = reco_energy
                 reco_event["reco_alt"] = alt.to("deg").value
                 reco_event["reco_az"] = az.to("deg").value
@@ -398,6 +419,16 @@ def main():
         evt_cutflow()
         print()
         img_cutflow()
+
+        evt_table=evt_cutflow.get_table()
+        evt_table.remove_column('Efficiency')
+        evt_table.add_row(['Run',n_run])
+        evt_table.write('EventCut_Table_run'+str(n_run)+'.csv')
+        
+        img_table=img_cutflow.get_table()
+        img_table.remove_column('Efficiency')
+        img_table.add_row(['Run',n_run]) 
+        img_table.write('ImageCut_Table_run'+str(n_run)+'.csv')
 
     except ZeroDivisionError:
         pass
