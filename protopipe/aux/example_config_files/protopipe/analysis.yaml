@@ -87,6 +87,7 @@ ImageSelection:
  pixel: [3, 1e10]
  ellipticity: [0.1, 0.6]
  nominal_distance: [0., 0.8]  # in camera radius
+ pixel: [7, 1e10]
 
 # Minimal number of telescopes to consider events
 Reconstruction:
