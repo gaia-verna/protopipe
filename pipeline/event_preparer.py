@@ -909,6 +909,7 @@ class EventPreparer:
             n_pixel_dict = {}
             leak_reco={}
             truncated_image={}
+            weight = {}
             hillas_dict_reco = {}  # for direction reconstruction
             hillas_dict = {}  # for discrimination
             n_tels = {
@@ -1117,7 +1118,7 @@ class EventPreparer:
                 n_pixel_dict[tel_id] = len(np.where(image_extended > 0)[0])
                 tot_signal += moments.intensity
                 
-                weigth[tel_id] = moments_reco.intensity*(moments_reco.length/moments_reco.width)
+                weight[tel_id] = moments_reco.intensity*(moments_reco.length/moments_reco.width)
             
             n_tels["reco"] = len(hillas_dict_reco)
             n_tels["discri"] = len(hillas_dict)
