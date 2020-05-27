@@ -22,6 +22,7 @@ from ctapipe.calib import CameraCalibrator
 from ctapipe.calib.camera.gainselection import GainSelector
 
 # from ctapipe.image.extractor import LocalPeakWindowSum
+from ctapipe.image import hillas, leakage
 from ctapipe.image import hillas
 from ctapipe.image.cleaning import tailcuts_clean
 from ctapipe.utils.CutFlow import CutFlow
@@ -62,8 +63,8 @@ PreparedEvent = namedtuple(
         "calibration_status",
         "mc_phe_image",
         "n_pixel_dict",
-	"truncated_image",
-	"leak_reco",
+	    "truncated_image",
+	    "leak_reco",
         "hillas_dict",
         "hillas_dict_reco",
         "n_tels",
@@ -781,7 +782,7 @@ class EventPreparer:
         npix_bounds = config["ImageSelection"]["pixel"]
         ellipticity_bounds = config["ImageSelection"]["ellipticity"]
         nominal_distance_bounds = config["ImageSelection"]["nominal_distance"]
-        npix_bounds_truncated = config["ImageSelection"]["pixel_truncated"]
+        npix_bounds_truncated = config["TruncatedImages_Fit"]["ImageSelection"]["pixel_truncated"]        
 
         if debug:
             camera_radius(
@@ -814,9 +815,8 @@ class EventPreparer:
                         lambda m, cam_id: m.r.value
                         > (nominal_distance_bounds[-1] * self.camera_radius[cam_id]),
                     ),  # in meter
-                    (
-                     	"min pixel truncated", lambda s: np.count_nonzero(s) < npix_bounds_truncated[0]
-                    ),
+                    ("min pixel truncated", lambda s: np.count_nonzero(s) < npix_bounds_truncated[0]),
+                    ("fit truncated invaild", lambda s: s==True),
                 ]
             )
         )
@@ -973,8 +973,10 @@ class EventPreparer:
                         # to make Hillas parametrization faster
                         camera_biggest = camera[mask_reco]
                         image_biggest = image_biggest[mask_reco]
+                        leak_reco[tel_id]=leakage(camera,pmt_signal, mask_reco)
+                        
                         if save_images is True:
-                        	dl1_phe_image_mask_reco[tel_id] = mask_reco
+                            dl1_phe_image_mask_reco[tel_id] = mask_reco
                    
                     elif num_islands > 1:  # if more islands survived..
                         # ...find the biggest one
@@ -982,9 +984,11 @@ class EventPreparer:
                         # and also reduce dimensions
                         camera_biggest = camera[mask_biggest]
                         image_biggest = image_biggest[mask_biggest]
+                        leak_reco[tel_id]=leakage(camera,pmt_signal, mask_biggest)
+                        
                         if save_images is True:
-                        	dl1_phe_image_mask_reco[tel_id] = mask_biggest
-                        	
+                            dl1_phe_image_mask_reco[tel_id] = mask_biggest
+                        
                     else:  # if no islands survived use old camera and image
                         camera_biggest = camera
 
@@ -1094,17 +1098,18 @@ class EventPreparer:
                             continue
 
                         truncated_image[tel_id]=False
+                        
                         if self.image_cutflow.cut(
                             "close to the edge", moments_reco, camera.cam_id
                         ):
-                           truncated_image[tel_id]=True
-                            
-                           if self.image_cutflow.cut(
-                              "close to the edge and few pixels", image_biggest
-                           ):
-                            continue
-                           else:
-                            pass
+                            truncated_image[tel_id]=True
+                            if self.image_cutflow.cut("min pixel truncated", image_biggest):
+                                continue
+                            fit_invalid=False
+                            if self.image_cutflow.cut("fit truncated invaild", fit_invalid):
+                                pass
+                            else:
+                                pass
 
                     except (FloatingPointError, hillas.HillasParameterizationError):
                         continue
@@ -1193,9 +1198,9 @@ class EventPreparer:
                 calibration_status=calibration_status,
                 mc_phe_image=mc_phe_image,
                 n_pixel_dict=n_pixel_dict,
-                truncated_image=truncated_image,		
+                truncated_image=truncated_image,
                 leak_reco=leak_reco,
-		hillas_dict=hillas_dict,
+                hillas_dict=hillas_dict,
                 hillas_dict_reco=hillas_dict_reco,
                 n_tels=n_tels,
                 tot_signal=tot_signal,
