@@ -3,6 +3,9 @@ from abc import abstractmethod
 import math
 import numpy as np
 
+# For Truncated_fit
+from iminuit import Minuit
+
 # remove with ctapipe0.8
 from scipy.sparse.csgraph import connected_components
 
@@ -12,6 +15,8 @@ from numpy.polynomial.polynomial import polyval
 from scipy.stats import siegelslopes
 from astropy import units as u
 from astropy.coordinates import SkyCoord
+from astropy.coordinates import Angle
+
 import warnings
 from traitlets.config import Config
 from collections import namedtuple, OrderedDict
@@ -20,6 +25,9 @@ from collections import namedtuple, OrderedDict
 from ctapipe.io.containers import TimingParametersContainer
 from ctapipe.calib import CameraCalibrator
 from ctapipe.calib.camera.gainselection import GainSelector
+from ctapipe.io.containers import HillasParametersContainer
+from ctapipe.image.hillas import camera_to_shower_coordinates
+from ctapipe.image.cleaning import dilate
 
 # from ctapipe.image.extractor import LocalPeakWindowSum
 from ctapipe.image import hillas, leakage
@@ -879,6 +887,152 @@ class EventPreparer:
             Dictionary containing event-image information to be written.
 
         """
+        def Model_SignGaussian(par,x,y):
+            a =(np.cos(par[5])**2/(par[3]**2))+(np.sin(par[5])**2/(par[4]**2))
+            b =-(np.sin(2*par[5])/(par[3]**2))+(np.sin(2*par[5])/(par[4]**2))
+            c =(np.sin(par[5])**2/(par[3]**2))+(np.cos(par[5])**2/(par[4]**2))
+            rho_1 = a*(x - par[1])**2 - b*(x - par[1])*(y - par[2]) + c*(y - par[2])**2  #anticlock
+            return par[0]/(2*math.pi*par[3]*par[4])* np.exp(-0.5*rho_1)
+
+        def Chi2_YES_NSB(par):    
+            #N_def = len(x) - 6 - 1
+            signal_gauss = Model_SignGaussian(par,x,y)*area_pix
+            #return (1/N_def) * np.sum((signal_obs - signal_gauss)**2/(signal_gauss+var_ped))
+            return np.sum((signal_obs - signal_gauss)**2/(signal_gauss+var_ped))
+
+        def mask_dilate(mask):
+            ma = mask.copy()
+            new_m = dilate(camera, ma)
+            return new_m.astype(bool)
+
+        def hillas_parameters_fit(hillas_c,geom, image,clean,truncated=False):
+
+            Hillas_0 = (hillas_c['intensity'],
+                        hillas_c['x'].value,
+                        hillas_c['y'].value,
+                        hillas_c['length'].value,
+                        hillas_c['width'].value,
+                        hillas_c['psi'].value)
+
+            unit = geom.pix_x.unit
+
+            long, trans = camera_to_shower_coordinates(x,y,hillas_c['x'].value, hillas_c['y'].value, hillas_c['psi'].value)
+
+            R_PMT = math.sqrt((2*math.sqrt(3)/9)*area_pix[0])
+
+            if truncated:
+                if min(x)>0 and max(x)>0:
+                    cog_x_min = min(x)
+                    cog_x_max = max(x)+15*R_PMT
+                elif min(x)<0 and max(x)<0:
+                    cog_x_min = min(x)-15*R_PMT
+                    cog_x_max = max(x)
+                elif min(x)<0 and max(x)>0 and min(y)>0 and Hillas_0[5]>0:
+                    cog_x_min = min(x)
+                    cog_x_max = max(x)+15*R_PMT
+                elif min(x)<0 and max(x)>0 and min(y)>0 and Hillas_0[5]<0:
+                    cog_x_min = min(x)-15*R_PMT
+                    cog_x_max = max(x)
+                elif min(x)<0 and max(x)>0 and min(y)<0 and Hillas_0[5]>0:
+                    cog_x_min = min(x)-15*R_PMT
+                    cog_x_max = max(x)
+                elif min(x)<0 and max(x)>0 and min(y)<0 and Hillas_0[5]<0:
+                    cog_x_min = min(x)
+                    cog_x_max = max(x)+15*R_PMT
+
+
+                if min(y)>0 and max(y)>0:
+                    cog_y_min = min(y)
+                    cog_y_max = max(y)+15*R_PMT
+                elif min(y)<0 and max(y)<0:
+                    cog_y_min = min(y)-15*R_PMT
+                    cog_y_max = max(y)
+                elif min(y)<0 and max(y)>0 and min(x)>0 and Hillas_0[5]>0:
+                    cog_y_min = min(y)
+                    cog_y_max = max(y)+15*R_PMT
+                elif min(y)<0 and max(x)>0 and min(x)>0 and Hillas_0[5]<0:
+                    cog_y_min = min(y)-15*R_PMT
+                    cog_y_max = max(y)
+                elif min(y)<0 and max(y)>0 and min(x)<0 and Hillas_0[5]>0:
+                    cog_y_min = min(y)-15*R_PMT
+                    cog_y_max = max(y)
+                elif min(y)<0 and max(y)>0 and min(x)<0 and Hillas_0[5]<0:
+                    cog_y_min = min(y)
+                    cog_y_max = max(y)+15*R_PMT
+            else:
+                cog_x_min = min(x)
+                cog_x_max = max(x)
+                cog_y_min = min(y)
+                cog_y_max = max(y)
+
+            Lim = {'Intensity': 
+               {'min': Hillas_0[0]/2,
+                'max': Hillas_0[0]*10},
+               'Cog_x': 
+               {'min':cog_x_min,
+                'max':cog_x_max},
+               'Cog_y': 
+               {'min': cog_y_min,
+                'max': cog_y_max},
+               'Length': 
+               {'min': Hillas_0[3]/2,
+                'max': max(np.absolute(long))},
+               'Width': 
+               {'min': Hillas_0[4]/2,
+                'max': max(np.absolute(trans))},
+               'Psi': 
+               {'min': -2*math.pi,
+                'max': 2*math.pi}
+              }
+
+            bnds = ((Lim['Intensity']['min'], Lim['Intensity']['max']),
+                (Lim['Cog_x']['min'],Lim['Cog_x']['max']),
+                (Lim['Cog_y']['min'],Lim['Cog_y']['max']),
+                (Lim['Length']['min'],Lim['Length']['max']),
+                (Lim['Width']['min'],Lim['Width']['max']),
+                (Lim['Psi']['min'],Lim['Psi']['max'])
+                )
+
+            name = ("intensity", "x","y","length","width","psi")
+            err = (0.01,0.01,0.01,0.01,0.01,0.01)
+            fix = (False,False,False,False,False,False)
+
+            m_Chi2 = Minuit.from_array_func(
+                Chi2_YES_NSB, 
+                Hillas_0, 
+                limit=bnds, 
+                error=err, 
+                fix = fix, 
+                name =name, 
+                errordef=1,
+            )
+            status, param = m_Chi2.migrad()
+            Fval=m_Chi2.fval
+
+            if status.has_covariance==True and status.is_valid==True and m_Chi2.migrad_ok():
+                Fit_Invalid=False
+            else:
+                Fit_Invalid=True      
+
+            Res = (m_Chi2.values['intensity'],m_Chi2.values['x'],m_Chi2.values['y'],m_Chi2.values['length'],m_Chi2.values['width'],m_Chi2.values['psi'])
+
+            # polar coordinates of the cog
+            cog_r = np.linalg.norm([m_Chi2.values['x'], m_Chi2.values['y']])
+            cog_phi = np.arctan2(m_Chi2.values['y'], m_Chi2.values['x'])
+
+            return HillasParametersContainer(
+                x=u.Quantity(m_Chi2.values['x'], unit),
+                y=u.Quantity(m_Chi2.values['y'], unit),
+                r=u.Quantity(cog_r, unit),
+                phi=Angle(cog_phi, unit=u.rad),
+                intensity=m_Chi2.values['intensity'],
+                length=u.Quantity(m_Chi2.values['length'], unit),
+                width=u.Quantity(m_Chi2.values['width'], unit),
+                psi=Angle(m_Chi2.values['psi'], unit=u.rad),
+                skewness=np.nan,
+                kurtosis=np.nan
+            ), Fval, Res, Lim, Fit_Invalid
+        
         ievt = 0
         for event in source:
 
@@ -1098,7 +1252,8 @@ class EventPreparer:
                             continue
 
                         truncated_image[tel_id]=False
-                        
+                        #moments_reco_STD = moments_reco
+
                         if self.image_cutflow.cut(
                             "close to the edge", moments_reco, camera.cam_id
                         ):
@@ -1106,8 +1261,28 @@ class EventPreparer:
                             if self.image_cutflow.cut("min pixel truncated", image_biggest):
                                 continue
                             fit_invalid=False
+                            
+                            if num_islands <= 1:
+                                mask_fit = mask_dilate(mask_reco.copy())
+                            elif num_islands > 1:
+                                mask_fit = mask_dilate(mask_biggest.copy())
+                            
+                            x = camera[mask_fit].pix_x.value
+                            y = camera[mask_fit].pix_y.value
+                            signal_obs = pmt_signal[mask_fit]
+                            area_pix = camera[mask_fit].pix_area.value
+
+                            ped_obs = pmt_signal[~mask_fit]
+                            var_ped = np.var(ped_obs)
+                            moments_reco, Fval, Res, Lim, Fit_Invalid = hillas_parameters_fit(
+                                moments_reco,
+                                camera,
+                                pmt_signal,
+                                mask_fit, 
+                                truncated=truncated_image[tel_id])               
+                            
                             if self.image_cutflow.cut("fit truncated invaild", fit_invalid):
-                                pass
+                                continue
                             else:
                                 pass
 
