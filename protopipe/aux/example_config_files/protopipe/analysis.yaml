@@ -2,7 +2,7 @@
 # NOTE: only Prod3b simulations are currently supported.
 General:
  config_name: 'example'
- site: 'south'  # 'north' or 'south'
+ site: 'north'  # 'north' or 'south'
  # array can be either
  # - 'subarray_LSTs', 'subarray_MSTs', 'subarray_SSTs' or 'full_array'
  # - a custom list of telescope IDs
@@ -81,13 +81,18 @@ ImageCleaning:
      detect_only_positive_structures: False
      clusters_threshold: 0
 
+# Including Truncated images
+TruncatedImages_Fit: 
+ ImageSelection:
+  pixel_truncated: [7, 1e10]
+  
+
 # Cut for image selection
 ImageSelection:
  charge: [50., 1e10]
  pixel: [3, 1e10]
  ellipticity: [0.1, 0.6]
  nominal_distance: [0., 0.8]  # in camera radius
- pixel_truncated: [7, 1e10]
 
 # Minimal number of telescopes to consider events
 Reconstruction:
