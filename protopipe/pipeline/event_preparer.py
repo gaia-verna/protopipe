@@ -1101,6 +1101,8 @@ class EventPreparer:
                 n_pixel_dict[tel_id] = len(np.where(image_extended > 0)[0])
                 tot_signal += moments.intensity
 
+		 weight[tel_id] = moments_reco.intensity*(moments_reco.length/moments_reco.width)
+
             n_tels["reco"] = len(hillas_dict_reco)
             n_tels["discri"] = len(hillas_dict)
             if self.event_cutflow.cut("min2Tels reco", n_tels["reco"]):
@@ -1116,6 +1118,7 @@ class EventPreparer:
                     # Reconstruction results
                     reco_result = self.shower_reco.predict(
                         hillas_dict_reco,
+			weight,
                         event.inst,
                         SkyCoord(alt=alt, az=az, frame="altaz"),
                         {
