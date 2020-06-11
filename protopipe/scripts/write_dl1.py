@@ -386,6 +386,10 @@ def main():
             table.flush()
 
     evt_cutflow()
+    evt_table=evt_cutflow.get_table()
+    evt_table.remove_column('Efficiency')
+    evt_table.add_row(['Run',n_run])
+    evt_table.write('EventCut_Table_run'+str(n_run)+'.csv')
 
     # Catch specific cases
     triggered_events = evt_cutflow.cuts["min2Tels trig"][1]
@@ -398,6 +402,11 @@ def main():
         )
     else:
         img_cutflow()
+        img_table=img_cutflow.get_table()
+        img_table.remove_column('Efficiency')
+        img_table.add_row(['Run',n_run]) 
+        img_table.write('ImageCut_Table_run'+str(n_run)+'.csv')
+
         if reconstructed_events == 0:
             print(
                 "\033[93m WARNING: None of the triggered events have been "
