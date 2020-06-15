@@ -905,6 +905,7 @@ class EventPreparer:
             n_pixel_dict = {}
             leak_reco={}
             truncated_image={}
+            weight = {}
             hillas_dict_reco = {}  # for direction reconstruction
             hillas_dict = {}  # for discrimination
             n_tels = {
@@ -1112,6 +1113,8 @@ class EventPreparer:
                 hillas_dict_reco[tel_id] = moments_reco
                 n_pixel_dict[tel_id] = len(np.where(image_extended > 0)[0])
                 tot_signal += moments.intensity
+                
+                weight[tel_id] = moments_reco.intensity*(moments_reco.length/moments_reco.width)
 
             n_tels["reco"] = len(hillas_dict_reco)
             n_tels["discri"] = len(hillas_dict)
@@ -1128,6 +1131,7 @@ class EventPreparer:
                     # Reconstruction results
                     reco_result = self.shower_reco.predict(
                         hillas_dict_reco,
+                        weight,
                         event.inst,
                         SkyCoord(alt=alt, az=az, frame="altaz"),
                         {
