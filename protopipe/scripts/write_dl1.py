@@ -209,6 +209,8 @@ def main():
             reco_result,
             impact_dict,
         ) in preper.prepare_event(source, save_images=args.save_images):
+            
+            n_run=event.r0.obs_id            
 
             # Angular quantities
             run_array_direction = event.mcheader.run_array_direction

@@ -73,24 +73,34 @@ def main():
     if not filenamelist:
         print("no files found; check indir: {}".format(args.indir))
         exit(-1)
-
+    
     # Get the IDs of the involved telescopes and associated cameras together
     # with the equivalent focal lengths from the first event
-    allowed_tels, cams_and_foclens = prod3b_array(filenamelist[0], site, array)
-
+    
+    allowed_tels, cams_and_foclens, subarray = prod3b_array(filenamelist[0], site, array)
+    
     # keeping track of events and where they were rejected
     evt_cutflow = CutFlow("EventCutFlow")
     img_cutflow = CutFlow("ImageCutFlow")
-
+    
     # Event preparer
+    #preper = EventPreparer(
+    #   config=cfg,
+    #   cams_and_foclens=cams_and_foclens,
+    #   mode=args.mode,
+    #   event_cutflow=evt_cutflow,
+    #   image_cutflow=img_cutflow,
+    #)
+
     preper = EventPreparer(
         config=cfg,
+        subarray=subarray,
         cams_and_foclens=cams_and_foclens,
         mode=args.mode,
         event_cutflow=evt_cutflow,
         image_cutflow=img_cutflow,
-    )
-
+      )
+    
     # Regressor and classifier methods
     regressor_method = cfg["EnergyRegressor"]["method_name"]
     classifier_method = cfg["GammaHadronClassifier"]["method_name"]
@@ -206,6 +216,9 @@ def main():
         for (
             event,
             dl1_phe_image,
+            dl1_phe_image_mask_reco,
+            dl1_phe_image_1stPass,
+            calibration_status,
             mc_phe_image,
             n_pixel_dict,
             hillas_dict,
@@ -215,8 +228,11 @@ def main():
             max_signals,
             n_cluster_dict,
             reco_result,
-            impact_dict,
+            impact_dict
         ) in preper.prepare_event(source):
+            
+            # Run
+            n_run=event.r0.obs_id
 
             # Angular quantities
             run_array_direction = event.mcheader.run_array_direction
@@ -398,6 +414,16 @@ def main():
         evt_cutflow()
         print()
         img_cutflow()
+
+        evt_table=evt_cutflow.get_table()
+        evt_table.remove_column('Efficiency')
+        evt_table.add_row(['Run',n_run])
+        evt_table.write('EventCut_Table_run'+str(n_run)+'.csv')
+        
+        img_table=img_cutflow.get_table()
+        img_table.remove_column('Efficiency')
+        img_table.add_row(['Run',n_run]) 
+        img_table.write('ImageCut_Table_run'+str(n_run)+'.csv')
 
     except ZeroDivisionError:
         pass
