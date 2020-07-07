@@ -71,11 +71,12 @@ PreparedEvent = namedtuple(
         "calibration_status",
         "mc_phe_image",
         "n_pixel_dict",
-	    "truncated_image",
-	    "leak_reco",
+        "truncated_image",
+        "leak_reco",
         "hillas_dict",
         "hillas_dict_reco_STD",
         "hillas_dict_reco_STDFIT",
+        "info_fit"
         "n_tels",
         "tot_signal",
         "max_signals",
@@ -793,7 +794,7 @@ class EventPreparer:
         npix_bounds = config["ImageSelection"]["pixel"]
         ellipticity_bounds = config["ImageSelection"]["ellipticity"]
         nominal_distance_bounds = config["ImageSelection"]["nominal_distance"]
-        npix_bounds_truncated = config["TruncatedImages_Fit"]["ImageSelection"]["pixel_truncated"]        
+        #npix_bounds_truncated = config["TruncatedImages_Fit"]["ImageSelection"]["pixel_truncated"]        
 
         if debug:
             camera_radius(
@@ -826,8 +827,8 @@ class EventPreparer:
                         lambda m, cam_id: m.r.value
                         > (nominal_distance_bounds[-1] * self.camera_radius[cam_id]),
                     ),  # in meter
-                    ("min pixel truncated", lambda s: np.count_nonzero(s) < npix_bounds_truncated[0]),
-                    ("fit truncated invaild", lambda s: s==True),
+                    #("min pixel truncated", lambda s: np.count_nonzero(s) < npix_bounds_truncated[0]),
+                    #("fit truncated invaild", lambda s: s==True),
                 ]
             )
         )
@@ -1017,8 +1018,6 @@ class EventPreparer:
             else:
                 Fit_Invalid=True      
 
-            Res = (m_Chi2.values['intensity'],m_Chi2.values['x'],m_Chi2.values['y'],m_Chi2.values['length'],m_Chi2.values['width'],m_Chi2.values['psi'])
-
             # polar coordinates of the cog
             cog_r = np.linalg.norm([m_Chi2.values['x'], m_Chi2.values['y']])
             cog_phi = np.arctan2(m_Chi2.values['y'], m_Chi2.values['x'])
@@ -1034,7 +1033,7 @@ class EventPreparer:
                 psi=Angle(m_Chi2.values['psi'], unit=u.rad),
                 skewness=np.nan,
                 kurtosis=np.nan
-            ), Fval, Res, Lim, Fit_Invalid
+            ), Fval, Lim, Fit_Invalid
         
         ievt = 0
         for event in source:
@@ -1070,6 +1069,7 @@ class EventPreparer:
             hillas_dict = {}  # for discrimination          
             hillas_dict_reco_STD = {}  # for direction reconstruction
             hillas_dict_reco_STDFIT = {}  # for direction reconstruction
+            info_fit={}
             n_tels = {
                 "tot": len(event.dl0.tels_with_data),
                 "LST_LST_LSTCam": 0,
@@ -1088,6 +1088,7 @@ class EventPreparer:
 
             point_azimuth_dict = {}
             point_altitude_dict = {}
+            
 
             # Compute impact parameter in tilt system
             run_array_direction = event.mcheader.run_array_direction
@@ -1181,7 +1182,7 @@ class EventPreparer:
                         camera_extended = camera
 
                     # could this go into `hillas_parameters` ...?
-                    # this is basically the charge of ALL islands
+                    # this is basically the charge of ALL islandstruncated
                     # not calculated later by the Hillas parametrization!
                     max_signals[tel_id] = np.max(image_extended)
 
@@ -1259,6 +1260,12 @@ class EventPreparer:
                             continue
 
                         truncated_image[tel_id]=False
+                        
+                        info_fit={
+                            'fval'=np.nan,
+                            'fit_invalid'=True
+                        }
+                        
                         moments_reco_STD = moments_reco
 
                         if self.image_cutflow.cut(
@@ -1280,17 +1287,20 @@ class EventPreparer:
 
                             ped_obs = pmt_signal[~mask_fit]
                             var_ped = np.var(ped_obs)
-                            moments_reco, Fval, Res, Lim, Fit_Invalid = hillas_parameters_fit(
+                            moments_reco, info_fit['fval'], Lim, info_fit['fit_invalid'] = hillas_parameters_fit(
                                 moments_reco,
                                 camera,
                                 pmt_signal,
                                 mask_fit, 
-                                truncated=truncated_image[tel_id])               
+                                truncated=truncated_image[tel_id]) 
                             
+                            
+                            """
                             if self.image_cutflow.cut("fit truncated invaild", Fit_Invalid):
                                 continue
                             else:
                                 pass
+                            """
 
                     except (FloatingPointError, hillas.HillasParameterizationError):
                         continue
@@ -1414,6 +1424,7 @@ class EventPreparer:
                 hillas_dict=hillas_dict,
                 hillas_dict_reco_STD = hillas_dict_reco_STD,
                 hillas_dict_reco_STDFIT = hillas_dict_reco_STDFIT,
+                info_fit=info_fit,
                 n_tels=n_tels,
                 tot_signal=tot_signal,
                 max_signals=max_signals,
