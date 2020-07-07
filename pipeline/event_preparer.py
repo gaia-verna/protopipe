@@ -76,7 +76,7 @@ PreparedEvent = namedtuple(
         "hillas_dict",
         "hillas_dict_reco_STD",
         "hillas_dict_reco_STDFIT",
-        "info_fit"
+        "info_fit",
         "n_tels",
         "tot_signal",
         "max_signals",
@@ -864,7 +864,9 @@ class EventPreparer:
                     ("noCuts", None),
                     ("min2Tels trig", lambda x: x < min_ntel),
                     ("min2Tels reco", lambda x: x < min_ntel),
-                    ("direction nan", lambda x: x.is_valid is False),
+                    ("direction nan STD", lambda x: x.is_valid is False),
+                    ("direction nan STDFIT", lambda x: x.is_valid is False),
+                    
                 ]
             )
         )
@@ -899,9 +901,7 @@ class EventPreparer:
             return par[0]/(2*math.pi*par[3]*par[4])* np.exp(-0.5*rho_1)
 
         def Chi2_YES_NSB(par):    
-            #N_def = len(x) - 6 - 1
             signal_gauss = Model_SignGaussian(par,x,y)*area_pix
-            #return (1/N_def) * np.sum((signal_obs - signal_gauss)**2/(signal_gauss+var_ped))
             return np.sum((signal_obs - signal_gauss)**2/(signal_gauss+var_ped))
 
         def mask_dilate(mask):
@@ -1012,6 +1012,7 @@ class EventPreparer:
             )
             status, param = m_Chi2.migrad()
             Fval=m_Chi2.fval
+            Dof= len(x) - 6 - 1
 
             if status.has_covariance==True and status.is_valid==True and m_Chi2.migrad_ok():
                 Fit_Invalid=False
@@ -1033,7 +1034,7 @@ class EventPreparer:
                 psi=Angle(m_Chi2.values['psi'], unit=u.rad),
                 skewness=np.nan,
                 kurtosis=np.nan
-            ), Fval, Lim, Fit_Invalid
+            ), Fval, Lim, Fit_Invalid, Dof
         
         ievt = 0
         for event in source:
@@ -1261,9 +1262,10 @@ class EventPreparer:
 
                         truncated_image[tel_id]=False
                         
-                        info_fit={
-                            'fval'=np.nan,
-                            'fit_invalid'=True
+                        info_fit[tel_id]={
+                            'fval':np.nan,
+                            'dof':np.nan,
+                            'fit_invalid':True
                         }
                         
                         moments_reco_STD = moments_reco
@@ -1272,8 +1274,10 @@ class EventPreparer:
                             "close to the edge", moments_reco, camera.cam_id
                         ):
                             truncated_image[tel_id]=True
+                            """
                             if self.image_cutflow.cut("min pixel truncated", image_biggest):
                                 continue
+                            """
                             
                             if num_islands <= 1:
                                 mask_fit = mask_dilate(mask_reco.copy())
@@ -1287,12 +1291,12 @@ class EventPreparer:
 
                             ped_obs = pmt_signal[~mask_fit]
                             var_ped = np.var(ped_obs)
-                            moments_reco, info_fit['fval'], Lim, info_fit['fit_invalid'] = hillas_parameters_fit(
+                            moments_reco, info_fit[tel_id]['fval'], Lim, info_fit[tel_id]['fit_invalid'],info_fit[tel_id]['dof'] = hillas_parameters_fit(
                                 moments_reco,
                                 camera,
                                 pmt_signal,
                                 mask_fit, 
-                                truncated=truncated_image[tel_id]) 
+                                truncated=truncated_image[tel_id])
                             
                             
                             """
@@ -1317,7 +1321,8 @@ class EventPreparer:
                 
                 weight[tel_id] = moments_reco_STD.intensity*(moments_reco_STD.length/moments_reco_STD.width)
             
-            n_tels["reco"] = len(hillas_dict_reco)
+            n_tels["reco"] = len(hillas_dict_reco_STD)
+            #n_tels["reco_STDFIT"] = len(hillas_dict_reco_STDFIT)
             n_tels["discri"] = len(hillas_dict)
             if self.event_cutflow.cut("min2Tels reco", n_tels["reco"]):
                 if return_stub:
@@ -1330,7 +1335,7 @@ class EventPreparer:
                     warnings.simplefilter("ignore")
 
                     # Reconstruction results
-                     reco_result_STD = self.shower_reco.predict(
+                    reco_result_STD = self.shower_reco.predict(
                         hillas_dict_reco_STD,
                         weight,
                         event.inst,
@@ -1400,12 +1405,12 @@ class EventPreparer:
                 else:
                     continue
 
-            if self.event_cutflow.cut("direction nan", reco_result_STD):
+            if self.event_cutflow.cut("direction nan STD", reco_result_STD):
                 if return_stub:
                     yield stub(event)
                 else:
                     continue
-            if self.event_cutflow.cut("direction nan", reco_result_STDFIT):
+            if self.event_cutflow.cut("direction nan STDFIT", reco_result_STDFIT):
                 if return_stub:
                     yield stub(event)
                 else:
