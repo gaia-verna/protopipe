@@ -794,7 +794,8 @@ class EventPreparer:
         npix_bounds = config["ImageSelection"]["pixel"]
         ellipticity_bounds = config["ImageSelection"]["ellipticity"]
         nominal_distance_bounds = config["ImageSelection"]["nominal_distance"]
-        #npix_bounds_truncated = config["TruncatedImages_Fit"]["ImageSelection"]["pixel_truncated"]        
+        # Add quality cuts on truncated images
+        npix_bounds_truncated = config["TruncatedImages_Fit"]["ImageSelection"]["pixel_truncated"]         
 
         if debug:
             camera_radius(
@@ -818,17 +819,17 @@ class EventPreparer:
                     (
                         "bad ellipticity",
                         lambda m: (m.width / m.length) < ellipticity_bounds[0]
-                        or (m.width / m.length) > ellipticity_bounds[-1],
-                    ),
-                    # ("close to the edge", lambda m, cam_id: m.r.value > (nominal_distance_bounds[-1] * 1.12949101073069946))
-                    # in meter
+                        or (m.width / m.length) > ellipticity_bounds[-1]),
                     (
                         "close to the edge",
                         lambda m, cam_id: m.r.value
                         > (nominal_distance_bounds[-1] * self.camera_radius[cam_id]),
                     ),  # in meter
-                    #("min pixel truncated", lambda s: np.count_nonzero(s) < npix_bounds_truncated[0]),
-                    #("fit truncated invaild", lambda s: s==True),
+                    (
+                        "min pixel truncated", lambda s: np.count_nonzero(s) < npix_bounds_truncated[0]),
+                    (
+                        "fit truncated invaild", lambda s: s==True
+                    ),
                 ]
             )
         )
@@ -1274,10 +1275,9 @@ class EventPreparer:
                             "close to the edge", moments_reco, camera.cam_id
                         ):
                             truncated_image[tel_id]=True
-                            """
+                            
                             if self.image_cutflow.cut("min pixel truncated", image_biggest):
-                                continue
-                            """
+                                continue     
                             
                             if num_islands <= 1:
                                 mask_fit = mask_dilate(mask_reco.copy())
@@ -1298,13 +1298,9 @@ class EventPreparer:
                                 mask_fit, 
                                 truncated=truncated_image[tel_id])
                             
-                            
-                            """
-                            if self.image_cutflow.cut("fit truncated invaild", Fit_Invalid):
+                            if self.image_cutflow.cut("fit truncated invaild", info_fit[tel_id]['fit_invalid']):
                                 continue
-                            else:
-                                pass
-                            """
+                            
 
                     except (FloatingPointError, hillas.HillasParameterizationError):
                         continue

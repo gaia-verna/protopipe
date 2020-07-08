@@ -19,9 +19,15 @@ def load_obj(name ):
 
 def prepare_data(ds, cuts, label=None):
     """Add variables in data frame"""
+    
     ds['log10_charge'] = np.log10(ds['sum_signal_cam'])
-    ds['log10_impact'] = np.log10(ds['impact_dist'])
     ds['log10_mc_energy'] = np.log10(ds['mc_energy'])
+    
+    # STD
+    ds['log10_impact'] = np.log10(ds['impact_dist_STD'])
+    # STD-FIT
+    #ds['log10_impact'] = np.log10(ds['impact_dist_STDFIT'])
+    
     try:  # for classification
         ds['log10_reco_energy'] = np.log10(ds['reco_energy'])
         ds['log10_reco_energy_tel'] = np.log10(ds['reco_energy_tel'])
