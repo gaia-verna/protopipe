@@ -36,7 +36,10 @@ def main():
         "--estimate_energy", action="store_true", help="Estimate energy"
     )
     parser.add_argument(
-        "--regressor_dir", type=str, default="./", help="regressors directory"
+        "--regressor_dir_STD", type=str, default="./", help="regressors directory STD analysis"
+    )
+    parser.add_argument(
+        "--regressor_dir_STDFIT", type=str, default="./", help="regressors directory STDFIT analysis"
     )
     args = parser.parse_args()
 
@@ -95,10 +98,11 @@ def main():
 
     # wrapper for the scikit-learn regressor
     if args.estimate_energy is True:
-        regressor_files = (
-            args.regressor_dir + "/regressor_{mode}_{cam_id}_{regressor}.pkl.gz"
+        
+        regressor_files_STD = (
+            args.regressor_dir_STD + "/regressor_{mode}_{cam_id}_{regressor}.pkl.gz"
         )
-        reg_file = regressor_files.format(
+        reg_file_STD = regressor_files_STD.format(
             **{
                 "mode": args.mode,
                 "wave_args": "mixed",  # ToDo, control
@@ -107,7 +111,21 @@ def main():
             }
         )
 
-        regressor = EnergyRegressor.load(reg_file, cam_id_list=cams_and_foclens.keys())
+        regressor_STD = EnergyRegressor.load(reg_file_STD, cam_id_list=cams_and_foclens.keys())
+        
+        regressor_files_STDFIT = (
+            args.regressor_dir_STDFIT + "/regressor_{mode}_{cam_id}_{regressor}.pkl.gz"
+        )
+        reg_file_STDFIT = regressor_files_STDFIT.format(
+            **{
+                "mode": args.mode,
+                "wave_args": "mixed",  # ToDo, control
+                "regressor": regressor_method,
+                "cam_id": "{cam_id}",
+            }
+        )
+
+        regressor_STDFIT = EnergyRegressor.load(reg_file_STDFIT, cam_id_list=cams_and_foclens.keys())
 
     # Declaration of the column descriptor for the (possible) images file
     # For the moment works only on LSTCam and NectarCam.
@@ -157,66 +175,69 @@ def main():
         xi_STD = tb.Float32Col(dflt=np.nan, pos=24)
         xi_STDFIT = tb.Float32Col(dflt=np.nan, pos=25)
         
-        reco_energy = tb.FloatCol(dflt=np.nan, pos=26)
-        ellipticity = tb.FloatCol(dflt=1, pos=27)
-        n_tel_reco = tb.FloatCol(dflt=1, pos=28)
-        n_tel_discri = tb.FloatCol(dflt=1, pos=29)
-        mc_core_x = tb.FloatCol(dflt=1, pos=30)
-        mc_core_y = tb.FloatCol(dflt=1, pos=31)
+        reco_energy_STD = tb.FloatCol(dflt=np.nan, pos=26)
+        reco_energy_STDFIT = tb.FloatCol(dflt=np.nan, pos=27)
         
-        reco_core_x_STD = tb.FloatCol(dflt=1, pos=32)
-        reco_core_y_STD = tb.FloatCol(dflt=1, pos=33)
-        reco_core_x_STDFIT = tb.FloatCol(dflt=1, pos=34)
-        reco_core_y_STDFIT = tb.FloatCol(dflt=1, pos=35)
+        ellipticity = tb.FloatCol(dflt=1, pos=28)
+        n_tel_reco = tb.FloatCol(dflt=1, pos=29)
+        n_tel_discri = tb.FloatCol(dflt=1, pos=30)
+        mc_core_x = tb.FloatCol(dflt=1, pos=31)
+        mc_core_y = tb.FloatCol(dflt=1, pos=32)
         
-        mc_h_first_int = tb.FloatCol(dflt=1, pos=36)
+        reco_core_x_STD = tb.FloatCol(dflt=1, pos=33)
+        reco_core_y_STD = tb.FloatCol(dflt=1, pos=34)
+        reco_core_x_STDFIT = tb.FloatCol(dflt=1, pos=35)
+        reco_core_y_STDFIT = tb.FloatCol(dflt=1, pos=36)
         
-        offset_STD = tb.Float32Col(dflt=np.nan, pos=37)
-        offset_STDFIT = tb.Float32Col(dflt=np.nan, pos=38)
+        mc_h_first_int = tb.FloatCol(dflt=1, pos=37)
         
-        mc_x_max = tb.Float32Col(dflt=np.nan, pos=39)
+        offset_STD = tb.Float32Col(dflt=np.nan, pos=38)
+        offset_STDFIT = tb.Float32Col(dflt=np.nan, pos=39)
+        
+        mc_x_max = tb.Float32Col(dflt=np.nan, pos=40)
 
-        alt_STD = tb.Float32Col(dflt=np.nan, pos=40)
-        az_STD = tb.Float32Col(dflt=np.nan, pos=41)
-        alt_STDFIT = tb.Float32Col(dflt=np.nan, pos=42)
-        az_STDFIT = tb.Float32Col(dflt=np.nan, pos=43)
+        alt_STD = tb.Float32Col(dflt=np.nan, pos=41)
+        az_STD = tb.Float32Col(dflt=np.nan, pos=42)
+        alt_STDFIT = tb.Float32Col(dflt=np.nan, pos=43)
+        az_STDFIT = tb.Float32Col(dflt=np.nan, pos=44)
         
-        reco_energy_tel = tb.Float32Col(dflt=np.nan, pos=44)
+        reco_energy_tel_STD = tb.Float32Col(dflt=np.nan, pos=45)
+        reco_energy_tel_STDFIT = tb.Float32Col(dflt=np.nan, pos=46)
         
         # from hillas_reco_STD
-        ellipticity_reco_STD = tb.FloatCol(dflt=1, pos=45)
-        local_distance_reco_STD = tb.Float32Col(dflt=1, pos=46)
-        skewness_reco_STD = tb.Float32Col(dflt=1, pos=47)
-        kurtosis_reco_STD = tb.Float32Col(dflt=1, pos=48)
-        width_reco_STD = tb.Float32Col(dflt=1, pos=49)
-        length_reco_STD = tb.Float32Col(dflt=1, pos=50)
-        cog_r_reco_STD = tb.Float32Col(dflt=1, pos=51)
-        cog_x_reco_STD = tb.Float32Col(dflt=1, pos=52)
-        cog_y_reco_STD = tb.Float32Col(dflt=1, pos=53)
-        psi_reco_STD = tb.Float32Col(dflt=1, pos=54)
-        intensity_STD = tb.Float32Col(dflt=1, pos=55)
+        ellipticity_reco_STD = tb.FloatCol(dflt=1, pos=47)
+        local_distance_reco_STD = tb.Float32Col(dflt=1, pos=48)
+        skewness_reco_STD = tb.Float32Col(dflt=1, pos=49)
+        kurtosis_reco_STD = tb.Float32Col(dflt=1, pos=50)
+        width_reco_STD = tb.Float32Col(dflt=1, pos=51)
+        length_reco_STD = tb.Float32Col(dflt=1, pos=52)
+        cog_r_reco_STD = tb.Float32Col(dflt=1, pos=53)
+        cog_x_reco_STD = tb.Float32Col(dflt=1, pos=54)
+        cog_y_reco_STD = tb.Float32Col(dflt=1, pos=55)
+        psi_reco_STD = tb.Float32Col(dflt=1, pos=56)
+        intensity_STD = tb.Float32Col(dflt=1, pos=57)
         
         # from hillas_reco_STDFIT
-        ellipticity_reco_STDFIT = tb.FloatCol(dflt=1, pos=56)
-        local_distance_reco_STDFIT = tb.Float32Col(dflt=1, pos=57)
-        width_reco_STDFIT = tb.Float32Col(dflt=1, pos=58)
-        length_reco_STDFIT = tb.Float32Col(dflt=1, pos=59)
-        cog_r_reco_STDFIT = tb.Float32Col(dflt=1, pos=60)
-        cog_x_reco_STDFIT = tb.Float32Col(dflt=1, pos=61)
-        cog_y_reco_STDFIT = tb.Float32Col(dflt=1, pos=62)
-        psi_reco_STDFIT = tb.Float32Col(dflt=1, pos=63)
-        intensity_STDFIT = tb.Float32Col(dflt=1, pos=64)
+        ellipticity_reco_STDFIT = tb.FloatCol(dflt=1, pos=58)
+        local_distance_reco_STDFIT = tb.Float32Col(dflt=1, pos=59)
+        width_reco_STDFIT = tb.Float32Col(dflt=1, pos=60)
+        length_reco_STDFIT = tb.Float32Col(dflt=1, pos=61)
+        cog_r_reco_STDFIT = tb.Float32Col(dflt=1, pos=62)
+        cog_x_reco_STDFIT = tb.Float32Col(dflt=1, pos=63)
+        cog_y_reco_STDFIT = tb.Float32Col(dflt=1, pos=64)
+        psi_reco_STDFIT = tb.Float32Col(dflt=1, pos=65)
+        intensity_STDFIT = tb.Float32Col(dflt=1, pos=66)
         
-        fval_FIT= tb.Float32Col(dflt=1, pos=65)
-        dof_FIT= tb.Float32Col(dflt=1, pos=66)
-        invalid_FIT= tb.BoolCol(dflt=False, pos=67)
+        fval_FIT= tb.Float32Col(dflt=1, pos=67)
+        dof_FIT= tb.Float32Col(dflt=1, pos=68)
+        invalid_FIT= tb.BoolCol(dflt=False, pos=69)
         
-        truncated_image= tb.BoolCol(dflt=False, pos=68)
-        n_truncated = tb.Int16Col(dflt=0, pos=69)
-        pixels_width_1 = tb.Float32Col(dflt=1, pos=70)
-        pixels_width_2 = tb.Float32Col(dflt=1, pos=71)
-        intensity_width_1 = tb.Float32Col(dflt=1, pos=72)
-        intensity_width_2 = tb.Float32Col(dflt=1, pos=73)
+        truncated_image= tb.BoolCol(dflt=False, pos=70)
+        n_truncated = tb.Int16Col(dflt=0, pos=71)
+        pixels_width_1 = tb.Float32Col(dflt=1, pos=72)
+        pixels_width_2 = tb.Float32Col(dflt=1, pos=73)
+        intensity_width_1 = tb.Float32Col(dflt=1, pos=74)
+        intensity_width_2 = tb.Float32Col(dflt=1, pos=75)
 
 
     feature_outfile = tb.open_file(args.outfile, mode="w")
@@ -308,39 +329,64 @@ def main():
             
             # Todo add conversion in number of radiation length,
             # need an atmosphere profile
-            reco_energy = np.nan
-            reco_energy_tel = dict()
+            reco_energy_STD = np.nan
+            reco_energy_STDFIT = np.nan
+
+            reco_energy_tel_STD = dict()
+            reco_energy_tel_STDFIT = dict()
+            
             
             # Not optimal at all, two loop on tel!!!
             # For energy estimation
             if args.estimate_energy is True:
                 weight_tel = np.zeros(len(hillas_dict.keys()))
-                energy_tel = np.zeros(len(hillas_dict.keys()))
+                energy_tel_STD = np.zeros(len(hillas_dict.keys()))
+                energy_tel_STDFIT = np.zeros(len(hillas_dict.keys()))
 
                 for idx, tel_id in enumerate(hillas_dict.keys()):
                     cam_id = event.inst.subarray.tel[tel_id].camera.cam_id
                     moments = hillas_dict[tel_id]
-                    model = regressor.model_dict[cam_id]
+                    model_STD = regressor_STD.model_dict[cam_id]
+                    model_STDFIT = regressor_STDFIT.model_dict[cam_id]
+                    
 
-                    features_img = np.array(
+                    features_img_STD = np.array(
                         [
                             np.log10(moments.intensity),
-                            np.log10(impact_dict[tel_id].value),
+                            np.log10(impact_dict_STD[tel_id].value),
                             moments.width.value,
                             moments.length.value,
-                            h_max.value,
+                            h_max_STD.value,
+                        ]
+                    )
+                    
+                    features_img_STDFIT = np.array(
+                        [
+                            np.log10(moments.intensity),
+                            np.log10(impact_dict_STDFIT[tel_id].value),
+                            moments.width.value,
+                            moments.length.value,
+                            h_max_STDFIT.value,
                         ]
                     )
 
-                    energy_tel[idx] = model.predict([features_img])
+                    energy_tel_STD[idx] = model_STD.predict([features_img_STD])
+                    energy_tel_STDFIT[idx] = model_STDFIT.predict([features_img_STDFIT])
+                    
                     weight_tel[idx] = moments.intensity
-                    reco_energy_tel[tel_id] = energy_tel[idx]
+                    
+                    reco_energy_tel_STD[tel_id] = energy_tel_STD[idx]
+                    reco_energy_tel_STDFIT[tel_id] = energy_tel_STDFIT[idx]
+                    
 
-                reco_energy = np.sum(weight_tel * energy_tel) / sum(weight_tel)
+                reco_energy_STD = np.sum(weight_tel * energy_tel_STD) / sum(weight_tel)
+                reco_energy_STDFIT = np.sum(weight_tel * energy_tel_STDFIT) / sum(weight_tel)
+                
             else:
                 for idx, tel_id in enumerate(hillas_dict.keys()):
-                    reco_energy_tel[tel_id] = np.nan
-
+                    reco_energy_tel_STD[tel_id] = np.nan
+                    reco_energy_tel_STDFIT[tel_id] = np.nan
+                    
             for idx, tel_id in enumerate(hillas_dict.keys()):
                 cam_id = event.inst.subarray.tel[tel_id].camera.cam_id
 
@@ -412,7 +458,9 @@ def main():
                 feature_events[cam_id]["xi_STD"] = xi_STD.to("deg").value
                 feature_events[cam_id]["xi_STDFIT"] = xi_STDFIT.to("deg").value
                 
-                feature_events[cam_id]["reco_energy"] = reco_energy                
+                feature_events[cam_id]["reco_energy_STD"] = reco_energy_STD   
+                feature_events[cam_id]["reco_energy_STDFIT"] = reco_energy_STDFIT                
+                
                 feature_events[cam_id]["n_cluster"] = n_cluster_dict[tel_id]
                 feature_events[cam_id]["n_tel_reco"] = n_tels["reco"]
                 feature_events[cam_id]["n_tel_discri"] = n_tels["discri"]
@@ -439,7 +487,8 @@ def main():
                 feature_events[cam_id]["alt_STDFIT"] = reco_result_STDFIT.alt.to("deg").value
                 feature_events[cam_id]["az_STDFIT"] = reco_result_STDFIT.az.to("deg").value
                 
-                feature_events[cam_id]["reco_energy_tel"] = reco_energy_tel[tel_id]
+                feature_events[cam_id]["reco_energy_tel_STD"] = reco_energy_tel_STD[tel_id]
+                feature_events[cam_id]["reco_energy_tel_STDFIT"] = reco_energy_tel_STDFIT[tel_id]
                 
                 # Variables from hillas_dict_reco_STD
                 feature_events[cam_id]["ellipticity_reco_STD"] = ellipticity_reco_STD.value

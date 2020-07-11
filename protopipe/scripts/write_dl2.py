@@ -5,7 +5,6 @@ import numpy as np
 from glob import glob
 import signal
 from astropy.coordinates.angle_utilities import angular_separation
-from astropy.io.ascii import Csv
 import tables as tb
 
 # ctapipe
@@ -32,8 +31,14 @@ def main():
 
     # Argument parser
     parser = make_argparser()
-    parser.add_argument("--regressor_dir", default="./", help="regressors directory")
-    parser.add_argument("--classifier_dir", default="./", help="regressors directory")
+    
+    parser.add_argument("--regressor_dir_STD", default="./", help="regressors directory STD analysys")
+    parser.add_argument("--regressor_dir_STDFIT", default="./", help="regressors directory STDFIT analysys")
+     
+    parser.add_argument("--classifier_dir_STD", default="./", help="regressors directory STD analysys")
+    parser.add_argument("--classifier_dir_STDFIT", default="./", help="regressors directory STDFIT analysys")
+    
+    
     parser.add_argument(
         "--force_tailcut_for_extended_cleaning",
         type=str2bool,
@@ -74,16 +79,16 @@ def main():
     if not filenamelist:
         print("no files found; check indir: {}".format(args.indir))
         exit(-1)
-
+    
     # Get the IDs of the involved telescopes and associated cameras together
     # with the equivalent focal lengths from the first event
     
     allowed_tels, cams_and_foclens, subarray = prod3b_array(filenamelist[0], site, array)
-
+    
     # keeping track of events and where they were rejected
     evt_cutflow = CutFlow("EventCutFlow")
     img_cutflow = CutFlow("ImageCutFlow")
-
+    
     # Event preparer
     #preper = EventPreparer(
     #   config=cfg,
@@ -101,7 +106,7 @@ def main():
         event_cutflow=evt_cutflow,
         image_cutflow=img_cutflow,
       )
-
+    
     # Regressor and classifier methods
     regressor_method = cfg["EnergyRegressor"]["method_name"]
     classifier_method = cfg["GammaHadronClassifier"]["method_name"]
@@ -119,10 +124,14 @@ def main():
 
     # Classifiers
     if use_classifier:
-        classifier_files = (
-            args.classifier_dir + "/classifier_{mode}_{cam_id}_{classifier}.pkl.gz"
+        classifier_files_STD = (
+            args.classifier_dir_STD + "/classifier_{mode}_{cam_id}_{classifier}.pkl.gz"
         )
-        clf_file = classifier_files.format(
+        
+        classifier_files_STDFIT = (
+            args.classifier_dir_STDFIT + "/classifier_{mode}_{cam_id}_{classifier}.pkl.gz"
+        )
+        clf_file_STD = classifier_files_STD.format(
             **{
                 "mode": force_mode,
                 "wave_args": "mixed",
@@ -130,14 +139,28 @@ def main():
                 "cam_id": "{cam_id}",
             }
         )
-        classifier = EventClassifier.load(clf_file, cam_id_list=cams_and_foclens.keys())
-
+        
+        clf_file_STDFIT = classifier_files_STDFIT.format(
+            **{
+                "mode": force_mode,
+                "wave_args": "mixed",
+                "classifier": classifier_method,
+                "cam_id": "{cam_id}",
+            }
+        )
+        classifier_STD = EventClassifier.load(clf_file_STD, cam_id_list=cams_and_foclens.keys())
+        classifier_STDFIT = EventClassifier.load(clf_file_STDFIT, cam_id_list=cams_and_foclens.keys())
+        
     # Regressors
     if use_regressor:
-        regressor_files = (
-            args.regressor_dir + "/regressor_{mode}_{cam_id}_{regressor}.pkl.gz"
+        regressor_files_STD = (
+            args.regressor_dir_STD + "/regressor_{mode}_{cam_id}_{regressor}.pkl.gz"
         )
-        reg_file = regressor_files.format(
+        regressor_files_STDFIT = (
+            args.regressor_dir_STDFIT + "/regressor_{mode}_{cam_id}_{regressor}.pkl.gz"
+        )
+        
+        reg_file_STD = regressor_files_STD.format(
             **{
                 "mode": force_mode,
                 "wave_args": "mixed",
@@ -145,7 +168,16 @@ def main():
                 "cam_id": "{cam_id}",
             }
         )
-        regressor = EnergyRegressor.load(reg_file, cam_id_list=cams_and_foclens.keys())
+        reg_file_STDFIT = regressor_files_STDFIT.format(
+            **{
+                "mode": force_mode,
+                "wave_args": "mixed",
+                "regressor": regressor_method,
+                "cam_id": "{cam_id}",
+            }
+        )
+        regressor_STD = EnergyRegressor.load(reg_file_STD, cam_id_list=cams_and_foclens.keys())
+        regressor_STDFIT = EnergyRegressor.load(reg_file_STDFIT, cam_id_list=cams_and_foclens.keys())
 
     # catch ctr-c signal to exit current loop and still display results
     signal_handler = SignalHandler()
@@ -167,23 +199,48 @@ def main():
         NTels_reco_lst = tb.Int16Col(dflt=0, pos=4)
         NTels_reco_mst = tb.Int16Col(dflt=0, pos=5)
         NTels_reco_sst = tb.Int16Col(dflt=0, pos=6)
-        mc_energy = tb.Float32Col(dflt=np.nan, pos=7)
-        reco_energy = tb.Float32Col(dflt=np.nan, pos=8)
-        reco_alt = tb.Float32Col(dflt=np.nan, pos=9)
-        reco_az = tb.Float32Col(dflt=np.nan, pos=10)
-        offset = tb.Float32Col(dflt=np.nan, pos=11)
-        xi = tb.Float32Col(dflt=np.nan, pos=12)
-        ErrEstPos = tb.Float32Col(dflt=np.nan, pos=13)
-        ErrEstDir = tb.Float32Col(dflt=np.nan, pos=14)
-        gammaness = tb.Float32Col(dflt=np.nan, pos=15)
-        success = tb.BoolCol(dflt=False, pos=16)
-        score = tb.Float32Col(dflt=np.nan, pos=17)
-        h_max = tb.Float32Col(dflt=np.nan, pos=18)
-        reco_core_x = tb.Float32Col(dflt=np.nan, pos=19)
-        reco_core_y = tb.Float32Col(dflt=np.nan, pos=20)
-        mc_core_x = tb.Float32Col(dflt=np.nan, pos=21)
-        mc_core_y = tb.Float32Col(dflt=np.nan, pos=22)
-        NTels_truncated = tb.Int16Col(dflt=0, pos=23)
+        
+        NTels_truncated = tb.Int16Col(dflt=0, pos=7)
+        
+        mc_energy = tb.Float32Col(dflt=np.nan, pos=8)
+        
+        reco_energy_STD = tb.Float32Col(dflt=np.nan, pos=9)
+        reco_energy_STDFIT = tb.Float32Col(dflt=np.nan, pos=10)
+        
+        reco_alt_STD = tb.Float32Col(dflt=np.nan, pos=11)
+        reco_alt_STDFIT = tb.Float32Col(dflt=np.nan, pos=12)
+        
+        reco_az_STD = tb.Float32Col(dflt=np.nan, pos=13)
+        reco_az_STDFIT = tb.Float32Col(dflt=np.nan, pos=14)
+
+        offset_STD = tb.Float32Col(dflt=np.nan, pos=15)
+        offset_STDFIT = tb.Float32Col(dflt=np.nan, pos=16)
+        
+        xi_STD = tb.Float32Col(dflt=np.nan, pos=17)
+        xi_STDFIT = tb.Float32Col(dflt=np.nan, pos=18)
+        
+        ErrEstPos = tb.Float32Col(dflt=np.nan, pos=19)
+        ErrEstDir = tb.Float32Col(dflt=np.nan, pos=20)
+        
+        gammaness_STD = tb.Float32Col(dflt=np.nan, pos=21)
+        gammaness_STDFIT = tb.Float32Col(dflt=np.nan, pos=22)
+        
+        success = tb.BoolCol(dflt=False, pos=23)
+        
+        score_STD = tb.Float32Col(dflt=np.nan, pos=24)
+        score_STDFIT = tb.Float32Col(dflt=np.nan, pos=25)
+        
+        h_max_STD = tb.Float32Col(dflt=np.nan, pos=26)
+        h_max_STDFIT = tb.Float32Col(dflt=np.nan, pos=27)
+        
+        reco_core_x_STD = tb.Float32Col(dflt=np.nan, pos=28)
+        reco_core_x_STDFIT = tb.Float32Col(dflt=np.nan, pos=29)
+        
+        reco_core_y_STD = tb.Float32Col(dflt=np.nan, pos=30)
+        reco_core_y_STDFIT = tb.Float32Col(dflt=np.nan, pos=31)
+        
+        mc_core_x = tb.Float32Col(dflt=np.nan, pos=32)
+        mc_core_y = tb.Float32Col(dflt=np.nan, pos=33)
 
     reco_outfile = tb.open_file(
         mode="w",
@@ -223,96 +280,153 @@ def main():
             calibration_status,
             mc_phe_image,
             n_pixel_dict,
-	    truncated_image,
-	    leak_reco,
+            truncated_image,
+            leak_reco,
             hillas_dict,
-            hillas_dict_reco,
+            hillas_dict_reco_STD,
+            hillas_dict_reco_STDFIT,
+            info_fit,
             n_tels,
             tot_signal,
             max_signals,
             n_cluster_dict,
-            reco_result,
-            impact_dict,
+            reco_result_STD,
+            reco_result_STDFIT,
+            impact_dict_STD,
+            impact_dict_STDFIT,
         ) in preper.prepare_event(source):
-
+            
             # Run
             n_run=event.r0.obs_id
-
+            
+            # N Truncated
+            n_truncated = int(sum(truncated_image.values()))
+            
             # Angular quantities
             run_array_direction = event.mcheader.run_array_direction
 
             # Angular separation between true and reco direction
-            xi = angular_separation(
-                event.mc.az, event.mc.alt, reco_result.az, reco_result.alt
+            xi_STD = angular_separation(
+                event.mc.az, event.mc.alt, reco_result_STD.az, reco_result_STD.alt
+            )
+            xi_STDFIT = angular_separation(
+                event.mc.az, event.mc.alt, reco_result_STDFIT.az, reco_result_STDFIT.alt
             )
 
             # Angular separation bewteen the center of the camera and the reco direction.
-            offset = angular_separation(
+            offset_STD = angular_separation(
                 run_array_direction[0],  # az
                 run_array_direction[1],  # alt
-                reco_result.az,
-                reco_result.alt,
+                reco_result_STD.az,
+                reco_result_STD.alt,
+            )
+            
+            offset_STDFIT = angular_separation(
+                run_array_direction[0],  # az
+                run_array_direction[1],  # alt
+                reco_result_STDFIT.az,
+                reco_result_STDFIT.alt,
             )
 
             # Height of shower maximum
-            h_max = reco_result.h_max
+            h_max_STD = reco_result_STD.h_max
+            h_max_STDFIT = reco_result_STDFIT.h_max
+            
 
             if hillas_dict is not None:
 
                 # Estimate particle energy
                 if use_regressor is True:
-                    energy_tel = np.zeros(len(hillas_dict.keys()))
+                    energy_tel_STD = np.zeros(len(hillas_dict.keys()))
+                    energy_tel_STDFIT = np.zeros(len(hillas_dict.keys()))
+                    
                     weight_tel = np.zeros(len(hillas_dict.keys()))
 
                     for idx, tel_id in enumerate(hillas_dict.keys()):
                         cam_id = event.inst.subarray.tel[tel_id].camera.cam_id
                         moments = hillas_dict[tel_id]
-                        model = regressor.model_dict[cam_id]
+                        model_STD = regressor_STD.model_dict[cam_id]
+                        model_STDFIT = regressor_STDFIT.model_dict[cam_id]       
 
                         # Features to be fed in the regressor
-                        features_img = np.array(
+                        features_img_STD = np.array(
                             [
                                 np.log10(moments.intensity),
-                                np.log10(impact_dict[tel_id].value),
+                                np.log10(impact_dict_STD[tel_id].value),
                                 moments.width.value,
                                 moments.length.value,
-                                h_max.value,
+                                h_max_STD.value,
+                            ]
+                        )
+                        features_img_STDFIT = np.array(
+                            [
+                                np.log10(moments.intensity),
+                                np.log10(impact_dict_STDFIT[tel_id].value),
+                                moments.width.value,
+                                moments.length.value,
+                                h_max_STDFIT.value,
                             ]
                         )
 
-                        energy_tel[idx] = model.predict([features_img])
+                        energy_tel_STD[idx] = model_STD.predict([features_img_STD])
+                        energy_tel_STDFIT[idx] = model_STDFIT.predict([features_img_STDFIT])
+                        
                         weight_tel[idx] = moments.intensity
 
-                    reco_energy = np.sum(weight_tel * energy_tel) / sum(weight_tel)
+                    reco_energy_STD = np.sum(weight_tel * energy_tel_STD) / sum(weight_tel)
+                    reco_energy_STDFIT = np.sum(weight_tel * energy_tel_STDFIT) / sum(weight_tel)
+                    
                 else:
-                    reco_energy = np.nan
-
+                    reco_energy_STD = np.nan
+                    reco_energy_STDFIT = np.nan
+                    
                 # Estimate particle score/gammaness
                 if use_classifier is True:
-                    score_tel = np.zeros(len(hillas_dict.keys()))
-                    gammaness_tel = np.zeros(len(hillas_dict.keys()))
+                    score_tel_STD = np.zeros(len(hillas_dict.keys()))
+                    gammaness_tel_STD = np.zeros(len(hillas_dict.keys()))
+                    score_tel_STDFIT = np.zeros(len(hillas_dict.keys()))
+                    gammaness_tel_STDFIT = np.zeros(len(hillas_dict.keys()))
+                    
                     weight_tel = np.zeros(len(hillas_dict.keys()))
 
                     for idx, tel_id in enumerate(hillas_dict.keys()):
                         cam_id = event.inst.subarray.tel[tel_id].camera.cam_id
                         moments = hillas_dict[tel_id]
-                        model = classifier.model_dict[cam_id]
+                        model_STD = classifier_STD.model_dict[cam_id]
+                        model_STDFIT = classifier_STD.model_dict[cam_id]
+                        
                         # Features to be fed in the classifier
-                        features_img = np.array(
+                        features_img_STD = np.array(
                             [
-                                np.log10(reco_energy),
+                                np.log10(reco_energy_STD),
                                 moments.width.value,
                                 moments.length.value,
                                 moments.skewness,
                                 moments.kurtosis,
-                                h_max.value,
+                                h_max_STD.value,
                             ]
                         )
+                        
+                        features_img_STDFIT = np.array(
+                            [
+                                np.log10(reco_energy_STDFIT),
+                                moments.width.value,
+                                moments.length.value,
+                                moments.skewness,
+                                moments.kurtosis,
+                                h_max_STDFIT.value,
+                            ]
+                        )
+                        
                         # Output of classifier according to type of classifier
                         if use_proba_for_classifier is False:
-                            score_tel[idx] = model.decision_function([features_img])
+                            score_tel_STD[idx] = model_STD.decision_function([features_img_STD])
+                            score_tel_STDFIT[idx] = model_STDFIT.decision_function([features_img_STDFIT])
                         else:
-                            gammaness_tel[idx] = model.predict_proba([features_img])[
+                            gammaness_tel_STD[idx] = model_STD.predict_proba([features_img_STD])[
+                                :, 1
+                            ]
+                            gammaness_tel_STDFIT[idx] = model_STDFIT.predict_proba([features_img_STDFIT])[
                                 :, 1
                             ]
                         # Should test other weighting strategy (e.g. power of charge, impact, etc.)
@@ -321,12 +435,18 @@ def main():
 
                     # Weight the final decision/proba
                     if use_proba_for_classifier is True:
-                        gammaness = np.sum(weight_tel * gammaness_tel) / sum(weight_tel)
+                        gammaness_STD = np.sum(weight_tel * gammaness_tel_STD) / sum(weight_tel)
+                        gammaness_STDFIT = np.sum(weight_tel * gammaness_tel_STDFIT) / sum(weight_tel)
                     else:
-                        score = np.sum(weight_tel * score_tel) / sum(weight_tel)
+                        score_STD = np.sum(weight_tel * score_tel_STD) / sum(weight_tel)
+                        score_STDFIT = np.sum(weight_tel * score_telSTDFIT) / sum(weight_tel)
                 else:
-                    score = np.nan
-                    gammaness = np.nan
+                    score_STD = np.nan
+                    score_STDFIT = np.nan
+                    
+                    gammaness_STD = np.nan
+                    gammaness_STDFIT = np.nan
+                    
 
                 # Regardless if energy or gammaness is estimated, if the user
                 # wants to save the images of the run we do it here
@@ -344,10 +464,18 @@ def main():
                 mc_core_x = shower.core_x
                 mc_core_y = shower.core_y
 
-                reco_core_x = reco_result.core_x
-                reco_core_y = reco_result.core_y
+                
+                # Impact parameter STD
+                reco_core_x_STD = reco_result_STD.core_x
+                reco_core_y_STD = reco_result_STD.core_y
 
-                alt, az = reco_result.alt, reco_result.az
+                # Impact parameter STDFIT
+                reco_core_x_STDFIT = reco_result_STDFIT.core_x
+                reco_core_y_STDFIT = reco_result_STDFIT.core_y
+
+                alt_STD, az_STD = reco_result_STD.alt, reco_result_STD.az
+                alt_STDFIT, az_STDFIT = reco_result_STDFIT.alt, reco_result_STDFIT.az
+                
 
                 # Fill table's attributes
                 reco_event["NTels_trig"] = len(event.dl0.tels_with_data)
@@ -363,26 +491,48 @@ def main():
                     + n_tels["SST_ASTRI_ASTRICam"]
                     + n_tels["SST_GCT_CHEC"]
                 )
-                reco_event["NTels_truncated"] = int(sum(truncated_image.values()))
-                reco_event["reco_energy"] = reco_energy
-                reco_event["reco_alt"] = alt.to("deg").value
-                reco_event["reco_az"] = az.to("deg").value
-                reco_event["offset"] = offset.to("deg").value
-                reco_event["xi"] = xi.to("deg").value
-                reco_event["h_max"] = h_max.to("m").value
-                reco_event["reco_core_x"] = reco_core_x.to("m").value
-                reco_event["reco_core_y"] = reco_core_y.to("m").value
+                reco_event["NTels_reco"] = len(hillas_dict)
+                
+                reco_event["reco_energy_STD"] = reco_energy_STD
+                reco_event["reco_energy_STDFIT"] = reco_energy_STDFIT
+                
+                reco_event["reco_alt_STD"] = alt_STD.to("deg").value
+                reco_event["reco_alt_STDFIT"] = alt_STDFIT.to("deg").value
+                
+                reco_event["reco_az_STD"] = az_STD.to("deg").value
+                reco_event["reco_az_STDFIT"] = az_STDFIT.to("deg").value
+                
+                reco_event["offset_STD"] = offset_STD.to("deg").value
+                reco_event["offset_STDFIT"] = offset_STDFIT.to("deg").value
+                
+                reco_event["xi_STD"] = xi_STD.to("deg").value
+                reco_event["xi_STDFIT"] = xi_STDFIT.to("deg").value
+                
+                reco_event["h_max_STD"] = h_max_STD.to("m").value
+                reco_event["h_max_STDFIT"] = h_max_STDFIT.to("m").value
+                
+                reco_event["reco_core_x_STD"] = reco_core_x_STD.to("m").value
+                reco_event["reco_core_x_STDFIT"] = reco_core_x_STDFIT.to("m").value
+                
+                reco_event["reco_core_y_STD"] = reco_core_y_STD.to("m").value
+                reco_event["reco_core_y_STDFIT"] = reco_core_y_STDFIT.to("m").value
+                
                 reco_event["mc_core_x"] = mc_core_x.to("m").value
                 reco_event["mc_core_y"] = mc_core_y.to("m").value
                 if use_proba_for_classifier is True:
-                    reco_event["gammaness"] = gammaness
+                    reco_event["gammaness_STD"] = gammaness_STD
+                    reco_event["gammaness_STDFIT"] = gammaness_STDFIT
                 else:
-                    reco_event["score"] = score
+                    reco_event["score_STD"] = score_STD
+                    reco_event["score_STDFIT"] = score_STDFIT
+                    
                 reco_event["success"] = True
+                
                 reco_event["ErrEstPos"] = np.nan
                 reco_event["ErrEstDir"] = np.nan
             else:
                 reco_event["success"] = False
+                
 
             # save basic event infos
             reco_event["mc_energy"] = event.mc.energy.to("TeV").value
