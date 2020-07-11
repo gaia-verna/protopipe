@@ -94,9 +94,17 @@ ImageSelection:
  ellipticity: [0.1, 0.6]
  nominal_distance: [0., 0.8]  # in camera radius
 
+# Cut for truncated image selection
+TruncatedImages_Fit:
+ ImageSelection:
+  pixel_truncated: [10, 1e10]
+  #nominal_distance_truncated: [0.9]  # in camera radius
+  #leakage_truncated: [0.5]  
+  
+
 # Minimal number of telescopes to consider events
 Reconstruction:
- min_tel: 2
+ min_tel: 3
 
 # Parameters for energy estimation
 EnergyRegressor:
