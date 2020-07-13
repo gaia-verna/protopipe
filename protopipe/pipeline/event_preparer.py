@@ -3,6 +3,9 @@ from abc import abstractmethod
 import math
 import numpy as np
 
+# For Truncated_fit
+from iminuit import Minuit
+
 # remove with ctapipe0.8
 from scipy.sparse.csgraph import connected_components
 
@@ -12,6 +15,8 @@ from numpy.polynomial.polynomial import polyval
 from scipy.stats import siegelslopes
 from astropy import units as u
 from astropy.coordinates import SkyCoord
+from astropy.coordinates import Angle
+
 import warnings
 from traitlets.config import Config
 from collections import namedtuple, OrderedDict
@@ -20,8 +25,12 @@ from collections import namedtuple, OrderedDict
 from ctapipe.io.containers import TimingParametersContainer
 from ctapipe.calib import CameraCalibrator
 from ctapipe.calib.camera.gainselection import GainSelector
+from ctapipe.io.containers import HillasParametersContainer
+from ctapipe.image.hillas import camera_to_shower_coordinates
+from ctapipe.image.cleaning import dilate
 
 # from ctapipe.image.extractor import LocalPeakWindowSum
+from ctapipe.image import hillas, leakage
 from ctapipe.image import hillas
 from ctapipe.image.cleaning import tailcuts_clean
 from ctapipe.utils.CutFlow import CutFlow
@@ -62,14 +71,20 @@ PreparedEvent = namedtuple(
         "calibration_status",
         "mc_phe_image",
         "n_pixel_dict",
+        "truncated_image",
+        "leak_reco",
         "hillas_dict",
-        "hillas_dict_reco",
+        "hillas_dict_reco_STD",
+        "hillas_dict_reco_STDFIT",
+        "info_fit",
         "n_tels",
         "tot_signal",
         "max_signals",
         "n_cluster_dict",
-        "reco_result",
-        "impact_dict",
+        "reco_result_STD",
+        "reco_result_STDFIT",
+        "impact_dict_STD",
+        "impact_dict_STDFIT",
     ],
 )
 
@@ -779,6 +794,8 @@ class EventPreparer:
         npix_bounds = config["ImageSelection"]["pixel"]
         ellipticity_bounds = config["ImageSelection"]["ellipticity"]
         nominal_distance_bounds = config["ImageSelection"]["nominal_distance"]
+        # Add quality cuts on truncated images
+        npix_bounds_truncated = config["TruncatedImages_Fit"]["ImageSelection"]["pixel_truncated"]         
 
         if debug:
             camera_radius(
@@ -802,15 +819,17 @@ class EventPreparer:
                     (
                         "bad ellipticity",
                         lambda m: (m.width / m.length) < ellipticity_bounds[0]
-                        or (m.width / m.length) > ellipticity_bounds[-1],
-                    ),
-                    # ("close to the edge", lambda m, cam_id: m.r.value > (nominal_distance_bounds[-1] * 1.12949101073069946))
-                    # in meter
+                        or (m.width / m.length) > ellipticity_bounds[-1]),
                     (
                         "close to the edge",
                         lambda m, cam_id: m.r.value
                         > (nominal_distance_bounds[-1] * self.camera_radius[cam_id]),
                     ),  # in meter
+                    (
+                        "min pixel truncated", lambda s: np.count_nonzero(s) < npix_bounds_truncated[0]),
+                    (
+                        "fit truncated invaild", lambda s: s==True
+                    ),
                 ]
             )
         )
@@ -846,7 +865,9 @@ class EventPreparer:
                     ("noCuts", None),
                     ("min2Tels trig", lambda x: x < min_ntel),
                     ("min2Tels reco", lambda x: x < min_ntel),
-                    ("direction nan", lambda x: x.is_valid is False),
+                    ("direction nan STD", lambda x: x.is_valid is False),
+                    ("direction nan STDFIT", lambda x: x.is_valid is False),
+                    
                 ]
             )
         )
@@ -873,6 +894,149 @@ class EventPreparer:
             Dictionary containing event-image information to be written.
 
         """
+        def Model_SignGaussian(par,x,y):
+            a =(np.cos(par[5])**2/(par[3]**2))+(np.sin(par[5])**2/(par[4]**2))
+            b =-(np.sin(2*par[5])/(par[3]**2))+(np.sin(2*par[5])/(par[4]**2))
+            c =(np.sin(par[5])**2/(par[3]**2))+(np.cos(par[5])**2/(par[4]**2))
+            rho_1 = a*(x - par[1])**2 - b*(x - par[1])*(y - par[2]) + c*(y - par[2])**2  #anticlock
+            return par[0]/(2*math.pi*par[3]*par[4])* np.exp(-0.5*rho_1)
+
+        def Chi2_YES_NSB(par):    
+            signal_gauss = Model_SignGaussian(par,x,y)*area_pix
+            return np.sum((signal_obs - signal_gauss)**2/(signal_gauss+var_ped))
+
+        def mask_dilate(mask):
+            ma = mask.copy()
+            new_m = dilate(camera, ma)
+            return new_m.astype(bool)
+
+        def hillas_parameters_fit(hillas_c,geom, image,clean,truncated=False):
+
+            Hillas_0 = (hillas_c['intensity'],
+                        hillas_c['x'].value,
+                        hillas_c['y'].value,
+                        hillas_c['length'].value,
+                        hillas_c['width'].value,
+                        hillas_c['psi'].value)
+
+            unit = geom.pix_x.unit
+
+            long, trans = camera_to_shower_coordinates(x,y,hillas_c['x'].value, hillas_c['y'].value, hillas_c['psi'].value)
+
+            R_PMT = math.sqrt((2*math.sqrt(3)/9)*area_pix[0])
+
+            if truncated:
+                if min(x)>0 and max(x)>0:
+                    cog_x_min = min(x)
+                    cog_x_max = max(x)+15*R_PMT
+                elif min(x)<0 and max(x)<0:
+                    cog_x_min = min(x)-15*R_PMT
+                    cog_x_max = max(x)
+                elif min(x)<0 and max(x)>0 and min(y)>0 and Hillas_0[5]>0:
+                    cog_x_min = min(x)
+                    cog_x_max = max(x)+15*R_PMT
+                elif min(x)<0 and max(x)>0 and min(y)>0 and Hillas_0[5]<0:
+                    cog_x_min = min(x)-15*R_PMT
+                    cog_x_max = max(x)
+                elif min(x)<0 and max(x)>0 and min(y)<0 and Hillas_0[5]>0:
+                    cog_x_min = min(x)-15*R_PMT
+                    cog_x_max = max(x)
+                elif min(x)<0 and max(x)>0 and min(y)<0 and Hillas_0[5]<0:
+                    cog_x_min = min(x)
+                    cog_x_max = max(x)+15*R_PMT
+
+
+                if min(y)>0 and max(y)>0:
+                    cog_y_min = min(y)
+                    cog_y_max = max(y)+15*R_PMT
+                elif min(y)<0 and max(y)<0:
+                    cog_y_min = min(y)-15*R_PMT
+                    cog_y_max = max(y)
+                elif min(y)<0 and max(y)>0 and min(x)>0 and Hillas_0[5]>0:
+                    cog_y_min = min(y)
+                    cog_y_max = max(y)+15*R_PMT
+                elif min(y)<0 and max(x)>0 and min(x)>0 and Hillas_0[5]<0:
+                    cog_y_min = min(y)-15*R_PMT
+                    cog_y_max = max(y)
+                elif min(y)<0 and max(y)>0 and min(x)<0 and Hillas_0[5]>0:
+                    cog_y_min = min(y)-15*R_PMT
+                    cog_y_max = max(y)
+                elif min(y)<0 and max(y)>0 and min(x)<0 and Hillas_0[5]<0:
+                    cog_y_min = min(y)
+                    cog_y_max = max(y)+15*R_PMT
+            else:
+                cog_x_min = min(x)
+                cog_x_max = max(x)
+                cog_y_min = min(y)
+                cog_y_max = max(y)
+
+            Lim = {'Intensity': 
+               {'min': Hillas_0[0]/2,
+                'max': Hillas_0[0]*10},
+               'Cog_x': 
+               {'min':cog_x_min,
+                'max':cog_x_max},
+               'Cog_y': 
+               {'min': cog_y_min,
+                'max': cog_y_max},
+               'Length': 
+               {'min': Hillas_0[3]/2,
+                'max': max(np.absolute(long))},
+               'Width': 
+               {'min': Hillas_0[4]/2,
+                'max': max(np.absolute(trans))},
+               'Psi': 
+               {'min': -2*math.pi,
+                'max': 2*math.pi}
+              }
+
+            bnds = ((Lim['Intensity']['min'], Lim['Intensity']['max']),
+                (Lim['Cog_x']['min'],Lim['Cog_x']['max']),
+                (Lim['Cog_y']['min'],Lim['Cog_y']['max']),
+                (Lim['Length']['min'],Lim['Length']['max']),
+                (Lim['Width']['min'],Lim['Width']['max']),
+                (Lim['Psi']['min'],Lim['Psi']['max'])
+                )
+
+            name = ("intensity", "x","y","length","width","psi")
+            err = (0.01,0.01,0.01,0.01,0.01,0.01)
+            fix = (False,False,False,False,False,False)
+
+            m_Chi2 = Minuit.from_array_func(
+                Chi2_YES_NSB, 
+                Hillas_0, 
+                limit=bnds, 
+                error=err, 
+                fix = fix, 
+                name =name, 
+                errordef=1,
+            )
+            status, param = m_Chi2.migrad()
+            Fval=m_Chi2.fval
+            Dof= len(x) - 6 - 1
+
+            if status.has_covariance==True and status.is_valid==True and m_Chi2.migrad_ok():
+                Fit_Invalid=False
+            else:
+                Fit_Invalid=True      
+
+            # polar coordinates of the cog
+            cog_r = np.linalg.norm([m_Chi2.values['x'], m_Chi2.values['y']])
+            cog_phi = np.arctan2(m_Chi2.values['y'], m_Chi2.values['x'])
+
+            return HillasParametersContainer(
+                x=u.Quantity(m_Chi2.values['x'], unit),
+                y=u.Quantity(m_Chi2.values['y'], unit),
+                r=u.Quantity(cog_r, unit),
+                phi=Angle(cog_phi, unit=u.rad),
+                intensity=m_Chi2.values['intensity'],
+                length=u.Quantity(m_Chi2.values['length'], unit),
+                width=u.Quantity(m_Chi2.values['width'], unit),
+                psi=Angle(m_Chi2.values['psi'], unit=u.rad),
+                skewness=np.nan,
+                kurtosis=np.nan
+            ), Fval, Lim, Fit_Invalid, Dof
+        
         ievt = 0
         for event in source:
 
@@ -901,8 +1065,13 @@ class EventPreparer:
             mc_phe_image = {}
             max_signals = {}
             n_pixel_dict = {}
-            hillas_dict_reco = {}  # for direction reconstruction
-            hillas_dict = {}  # for discrimination
+            leak_reco={}
+            truncated_image={}
+            weight = {}
+            hillas_dict = {}  # for discrimination          
+            hillas_dict_reco_STD = {}  # for direction reconstruction
+            hillas_dict_reco_STDFIT = {}  # for direction reconstruction
+            info_fit={}
             n_tels = {
                 "tot": len(event.dl0.tels_with_data),
                 "LST_LST_LSTCam": 0,
@@ -915,9 +1084,13 @@ class EventPreparer:
             }
             n_cluster_dict = {}
             impact_dict_reco = {}  # impact distance measured in tilt system
+            
+            impact_dict_STD = {}
+            impact_dict_STDFIT = {}
 
             point_azimuth_dict = {}
             point_altitude_dict = {}
+            
 
             # Compute impact parameter in tilt system
             run_array_direction = event.mcheader.run_array_direction
@@ -964,8 +1137,10 @@ class EventPreparer:
                         # to make Hillas parametrization faster
                         camera_biggest = camera[mask_reco]
                         image_biggest = image_biggest[mask_reco]
+                        leak_reco[tel_id]=leakage(camera,pmt_signal, mask_reco)
+                        
                         if save_images is True:
-                        	dl1_phe_image_mask_reco[tel_id] = mask_reco
+                            dl1_phe_image_mask_reco[tel_id] = mask_reco
                    
                     elif num_islands > 1:  # if more islands survived..
                         # ...find the biggest one
@@ -973,9 +1148,11 @@ class EventPreparer:
                         # and also reduce dimensions
                         camera_biggest = camera[mask_biggest]
                         image_biggest = image_biggest[mask_biggest]
+                        leak_reco[tel_id]=leakage(camera,pmt_signal, mask_biggest)
+                        
                         if save_images is True:
-                        	dl1_phe_image_mask_reco[tel_id] = mask_biggest
-                        	
+                            dl1_phe_image_mask_reco[tel_id] = mask_biggest
+                        
                     else:  # if no islands survived use old camera and image
                         camera_biggest = camera
 
@@ -1007,7 +1184,7 @@ class EventPreparer:
                         camera_extended = camera
 
                     # could this go into `hillas_parameters` ...?
-                    # this is basically the charge of ALL islands
+                    # this is basically the charge of ALL islandstruncated
                     # not calculated later by the Hillas parametrization!
                     max_signals[tel_id] = np.max(image_extended)
 
@@ -1080,14 +1257,50 @@ class EventPreparer:
                         # won't be very useful: skip
                         if self.image_cutflow.cut("poor moments", moments_reco):
                             continue
+                        
+                        if self.image_cutflow.cut("bad ellipticity", moments_reco):
+                            continue
+
+                        truncated_image[tel_id]=False
+                        
+                        info_fit[tel_id]={
+                            'fval':np.nan,
+                            'dof':np.nan,
+                            'fit_invalid':True
+                        }
+                        
+                        moments_reco_STD = moments_reco
 
                         if self.image_cutflow.cut(
                             "close to the edge", moments_reco, camera.cam_id
                         ):
-                            continue
+                            truncated_image[tel_id]=True
+                            
+                            if self.image_cutflow.cut("min pixel truncated", image_biggest):
+                                continue     
+                            
+                            if num_islands <= 1:
+                                mask_fit = mask_dilate(mask_reco.copy())
+                            elif num_islands > 1:
+                                mask_fit = mask_dilate(mask_biggest.copy())
+                            
+                            x = camera[mask_fit].pix_x.value
+                            y = camera[mask_fit].pix_y.value
+                            signal_obs = pmt_signal[mask_fit]
+                            area_pix = camera[mask_fit].pix_area.value
 
-                        if self.image_cutflow.cut("bad ellipticity", moments_reco):
-                            continue
+                            ped_obs = pmt_signal[~mask_fit]
+                            var_ped = np.var(ped_obs)
+                            moments_reco, info_fit[tel_id]['fval'], Lim, info_fit[tel_id]['fit_invalid'],info_fit[tel_id]['dof'] = hillas_parameters_fit(
+                                moments_reco,
+                                camera,
+                                pmt_signal,
+                                mask_fit, 
+                                truncated=truncated_image[tel_id])
+                            
+                            if self.image_cutflow.cut("fit truncated invaild", info_fit[tel_id]['fit_invalid']):
+                                continue
+                            
 
                     except (FloatingPointError, hillas.HillasParameterizationError):
                         continue
@@ -1097,11 +1310,15 @@ class EventPreparer:
 
                 n_tels[tel_type] += 1
                 hillas_dict[tel_id] = moments
-                hillas_dict_reco[tel_id] = moments_reco
+                hillas_dict_reco_STD[tel_id] = moments_reco_STD
+                hillas_dict_reco_STDFIT[tel_id] = moments_reco
                 n_pixel_dict[tel_id] = len(np.where(image_extended > 0)[0])
                 tot_signal += moments.intensity
-
-            n_tels["reco"] = len(hillas_dict_reco)
+                
+                weight[tel_id] = moments_reco_STD.intensity*(moments_reco_STD.length/moments_reco_STD.width)
+            
+            n_tels["reco"] = len(hillas_dict_reco_STD)
+            #n_tels["reco_STDFIT"] = len(hillas_dict_reco_STDFIT)
             n_tels["discri"] = len(hillas_dict)
             if self.event_cutflow.cut("min2Tels reco", n_tels["reco"]):
                 if return_stub:
@@ -1114,8 +1331,24 @@ class EventPreparer:
                     warnings.simplefilter("ignore")
 
                     # Reconstruction results
-                    reco_result = self.shower_reco.predict(
-                        hillas_dict_reco,
+                    reco_result_STD = self.shower_reco.predict(
+                        hillas_dict_reco_STD,
+                        weight,
+                        event.inst,
+                        SkyCoord(alt=alt, az=az, frame="altaz"),
+                        {
+                            tel_id: SkyCoord(
+                                alt=point_altitude_dict[tel_id],
+                                az=point_azimuth_dict[tel_id],
+                                frame="altaz",
+                            )  # cycle only on tels which still have an image
+                            for tel_id in point_altitude_dict.keys()
+                        },
+                    )
+                        
+                    reco_result_STDFIT = self.shower_reco.predict(
+                        hillas_dict_reco_STDFIT,
+                        weight,
                         event.inst,
                         SkyCoord(alt=alt, az=az, frame="altaz"),
                         {
@@ -1138,19 +1371,28 @@ class EventPreparer:
                             pos[0], pos[1], pos[2], frame=ground_frame
                         )
 
-                        core_ground = SkyCoord(
-                            reco_result.core_x,
-                            reco_result.core_y,
+                        core_ground_STD = SkyCoord(
+                            reco_result_STD.core_x,
+                            reco_result_STD.core_y,
+                            0 * u.m,
+                            frame=ground_frame,
+                        )
+                        core_ground_STDFIT = SkyCoord(
+                            reco_result_STDFIT.core_x,
+                            reco_result_STDFIT.core_y,
                             0 * u.m,
                             frame=ground_frame,
                         )
 
                         # Should be better handled (tilted frame)
-                        impact_dict_reco[tel_id] = np.sqrt(
-                            (core_ground.x - tel_ground.x) ** 2
-                            + (core_ground.y - tel_ground.y) ** 2
+                        impact_dict_STD[tel_id] = np.sqrt(
+                            (core_ground_STD.x - tel_ground.x) ** 2
+                            + (core_ground_STD.y - tel_ground.y) ** 2
                         )
-
+                        impact_dict_STDFIT[tel_id] = np.sqrt(
+                            (core_ground_STDFIT.x - tel_ground.x) ** 2
+                            + (core_ground_STDFIT.y - tel_ground.y) ** 2
+                        )
             except Exception as e:
                 print("exception in reconstruction:", e)
                 raise
@@ -1159,7 +1401,12 @@ class EventPreparer:
                 else:
                     continue
 
-            if self.event_cutflow.cut("direction nan", reco_result):
+            if self.event_cutflow.cut("direction nan STD", reco_result_STD):
+                if return_stub:
+                    yield stub(event)
+                else:
+                    continue
+            if self.event_cutflow.cut("direction nan STDFIT", reco_result_STDFIT):
                 if return_stub:
                     yield stub(event)
                 else:
@@ -1173,12 +1420,18 @@ class EventPreparer:
                 calibration_status=calibration_status,
                 mc_phe_image=mc_phe_image,
                 n_pixel_dict=n_pixel_dict,
+                truncated_image=truncated_image,
+                leak_reco=leak_reco,
                 hillas_dict=hillas_dict,
-                hillas_dict_reco=hillas_dict_reco,
+                hillas_dict_reco_STD = hillas_dict_reco_STD,
+                hillas_dict_reco_STDFIT = hillas_dict_reco_STDFIT,
+                info_fit=info_fit,
                 n_tels=n_tels,
                 tot_signal=tot_signal,
                 max_signals=max_signals,
                 n_cluster_dict=n_cluster_dict,
-                reco_result=reco_result,
-                impact_dict=impact_dict_reco,
+                reco_result_STD = reco_result_STD, 
+                reco_result_STDFIT = reco_result_STDFIT, 
+                impact_dict_STD = impact_dict_STD,
+                impact_dict_STDFIT = impact_dict_STDFIT
             )
