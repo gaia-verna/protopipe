@@ -26,7 +26,7 @@ def prepare_data(ds, cuts, label=None):
     # STD
     #ds['log10_impact_STD'] = np.log10(ds['impact_dist_STD'])
     # STD-FIT
-    ds['log10_impact'] = np.log10(ds['impact_dist_STDFIT'])
+    ds['log10_impact_STDFIT'] = np.log10(ds['impact_dist_STDFIT'])
     
     try:  # for classification
         # STD
@@ -35,6 +35,7 @@ def prepare_data(ds, cuts, label=None):
         # STDFIT
         ds['log10_reco_energy_STDFIT'] = np.log10(ds['reco_energy_STDFIT'])
         ds['log10_reco_energy_tel_STDFIT'] = np.log10(ds['reco_energy_tel_STDFIT'])
+        
         ds['label'] = np.full(len(ds), label)
     except:
         pass
