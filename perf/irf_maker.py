@@ -103,7 +103,13 @@ class SensitivityMaker(object):
         obs_time = self.config["analysis"]["obs_time"]["value"] * u.Unit(
             self.config["analysis"]["obs_time"]["unit"]
         )
-        sensitivity_estimator = SensitivityEstimator(irf=self.irf, livetime=obs_time)
+        slope = self.config["analysis"]["slope"]
+        alpha = self.config["analysis"]["alpha"]
+        sigma_min = self.config["analysis"]["min_sigma"]
+        gamma_min = self.config["analysis"]["min_excess"]
+        bkg_sys = self.config["analysis"]["bkg_sys"]
+        
+        sensitivity_estimator = SensitivityEstimator(irf=self.irf, livetime=obs_time, slope=slope, alpha=alpha, sigma=sigma_min, gamma_min=gamma_min, bkg_sys=bkg_sys)
         sensitivity_estimator.run()
         self.sens = sensitivity_estimator.results_table
 
