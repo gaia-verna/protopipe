@@ -17,6 +17,9 @@ analysis:
   type: 'opti'
   value: 0.2  # In degree, necessary for type fixed
 
+ # Slope of the PL model for the sensitivity estimation
+ slope: 2 
+
  # Normalisation between ON and OFF regions
  alpha: 0.2
 
