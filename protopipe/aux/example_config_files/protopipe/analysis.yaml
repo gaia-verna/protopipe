@@ -98,6 +98,7 @@ ImageSelection:
 TruncatedImages_Fit:
  ImageSelection:
   pixel_truncated: [10, 1e10]
+  charge_truncated: [50., 1e10]
   #nominal_distance_truncated: [0.9]  # in camera radius
   #leakage_truncated: [0.5]  
   

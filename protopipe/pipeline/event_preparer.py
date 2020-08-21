@@ -795,7 +795,8 @@ class EventPreparer:
         ellipticity_bounds = config["ImageSelection"]["ellipticity"]
         nominal_distance_bounds = config["ImageSelection"]["nominal_distance"]
         # Add quality cuts on truncated images
-        npix_bounds_truncated = config["TruncatedImages_Fit"]["ImageSelection"]["pixel_truncated"]         
+        npix_bounds_truncated = config["TruncatedImages_Fit"]["ImageSelection"]["pixel_truncated"]
+        charge_bounds_truncated = config["TruncatedImages_Fit"]["ImageSelection"]["charge_truncated"]
 
         if debug:
             camera_radius(
@@ -827,6 +828,8 @@ class EventPreparer:
                     ),  # in meter
                     (
                         "min pixel truncated", lambda s: np.count_nonzero(s) < npix_bounds_truncated[0]),
+                    (
+                        "min charge truncated", lambda x: x < charge_bounds_truncated[0]),
                     (
                         "fit truncated invaild", lambda s: s==True
                     ),
@@ -1277,7 +1280,9 @@ class EventPreparer:
                             truncated_image[tel_id]=True
                             
                             if self.image_cutflow.cut("min pixel truncated", image_biggest):
-                                continue     
+                                continue
+                            if self.image_cutflow.cut("min charge truncated", image_biggest):
+                                continue 
                             
                             if num_islands <= 1:
                                 mask_fit = mask_dilate(mask_reco.copy())
