@@ -1292,7 +1292,7 @@ class EventPreparer:
                             
                             if self.image_cutflow.cut("min pixel truncated", image_biggest):
                                 continue 
-                            if self.image_cutflow.cut("min charge truncated", image_biggest):
+                            if self.image_cutflow.cut("min charge truncated", np.sum(image_biggest)):
                                 continue 
                             
                             if num_islands <= 1:
