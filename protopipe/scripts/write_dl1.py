@@ -184,8 +184,8 @@ def main():
         reco_energy_STDFIT = tb.FloatCol(dflt=np.nan, pos=30)
         
         ellipticity = tb.FloatCol(dflt=1, pos=31)
-        n_tel_reco = tb.FloatCol(dflt=1, pos=32)
-        n_tel_reco_truncated = tb.FloatCol(dflt=1, pos=33)
+        n_tel_reco = tb.Int16Col(dflt=1, pos=32)
+        n_tel_reco_truncated = tb.Int16Col(dflt=1, pos=33)
         
         n_tel_discri = tb.FloatCol(dflt=1, pos=34)
         mc_core_x = tb.FloatCol(dflt=1, pos=35)
@@ -297,7 +297,7 @@ def main():
             # Angular quantities
             run_array_direction = event.mcheader.run_array_direction
 
-            n_truncated = int(sum(truncated_image.values()))
+            n_truncated = np.count_nonzero(truncated_image)
 
             xi_STD = angular_separation(
                 event.mc.az, event.mc.alt, reco_result_STD.az, reco_result_STD.alt
