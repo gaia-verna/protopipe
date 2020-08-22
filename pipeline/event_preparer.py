@@ -1288,7 +1288,7 @@ class EventPreparer:
                         if self.image_cutflow.cut(
                             "close to the edge", moments_reco, camera.cam_id
                         ):
-                            truncated_image[tel_id]=True
+                            truncated_image[tel_id]=True                                
                             
                             if self.image_cutflow.cut("min pixel truncated", image_biggest):
                                 continue 
@@ -1317,6 +1317,7 @@ class EventPreparer:
                             if self.image_cutflow.cut("fit truncated invaild", info_fit[tel_id]['fit_invalid']):
                                 continue
                             
+                            n_tels_truncated[tel_type] += 1                           
 
                     except (FloatingPointError, hillas.HillasParameterizationError):
                         continue
@@ -1325,10 +1326,6 @@ class EventPreparer:
                 point_altitude_dict[tel_id] = event.mc.tel[tel_id].altitude_raw * u.rad
                 
                 n_tels[tel_type] += 1
-                
-                if truncated_image[tel_id] == True:
-                    n_tels_truncated[tel_type] += 1
-                    pass
                 
                 hillas_dict[tel_id] = moments
                 hillas_dict_reco_STD[tel_id] = moments_reco_STD
