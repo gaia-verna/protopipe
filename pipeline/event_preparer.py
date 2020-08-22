@@ -1328,6 +1328,7 @@ class EventPreparer:
                 
                 if truncated_image[tel_id] == True:
                     n_tels_truncated[tel_type] += 1
+                    pass
                 
                 hillas_dict[tel_id] = moments
                 hillas_dict_reco_STD[tel_id] = moments_reco_STD
