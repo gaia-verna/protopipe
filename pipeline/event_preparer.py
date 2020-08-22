@@ -1294,6 +1294,8 @@ class EventPreparer:
                             if self.image_cutflow.cut("min charge truncated", np.sum(image_biggest)):
                                 continue 
                             
+                            truncated_image[tel_id]=True
+                            
                             if num_islands <= 1:
                                 mask_fit = mask_dilate(mask_reco.copy())
                             elif num_islands > 1:
@@ -1315,15 +1317,8 @@ class EventPreparer:
                             
                             if self.image_cutflow.cut("fit truncated invaild", info_fit[tel_id]['fit_invalid']):
                                 continue
-                            
-                            truncated_image[tel_id]=True
-                            
-                            print()
-                            print(tel_type)
-                            n_tels_truncated[tel_type] += 1    
-                            print(n_tels_truncated[tel_type])
-                            print()
-                            
+
+                            n_tels_truncated[tel_type] += 1
 
                     except (FloatingPointError, hillas.HillasParameterizationError):
                         continue

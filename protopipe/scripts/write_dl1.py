@@ -481,8 +481,8 @@ def main():
                 
                 feature_events[cam_id]["n_cluster"] = n_cluster_dict[tel_id]
                 
-                feature_events[cam_id]["n_tel_reco"] = n_tels["reco"]
-                feature_events[cam_id]["n_tel_reco_truncated"] = n_truncated
+                feature_events[cam_id]["n_tel_reco"] = int(n_tels["reco"])
+                feature_events[cam_id]["n_tel_reco_truncated"] = int(n_truncated)
                 
                 feature_events[cam_id]["n_tel_discri"] = n_tels["discri"]
                 
