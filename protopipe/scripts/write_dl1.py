@@ -153,91 +153,97 @@ def main():
         N_LST = tb.Int16Col(dflt=1, pos=5)
         N_MST = tb.Int16Col(dflt=1, pos=6)
         N_SST = tb.Int16Col(dflt=1, pos=7)
-        width = tb.Float32Col(dflt=1, pos=8)
-        length = tb.Float32Col(dflt=1, pos=9)
-        skewness = tb.Float32Col(dflt=1, pos=10)
-        kurtosis = tb.Float32Col(dflt=1, pos=11)
-        psi = tb.Float32Col(dflt=1, pos=12)
         
-        h_max_STD = tb.Float32Col(dflt=1, pos=13)
-        h_max_STDFIT = tb.Float32Col(dflt=1, pos=14)
+        N_LST_truncated = tb.Int16Col(dflt=1, pos=8)
+        N_MST_truncated = tb.Int16Col(dflt=1, pos=9)
+        N_SST_truncated = tb.Int16Col(dflt=1, pos=10)
         
-        err_est_pos = tb.Float32Col(dflt=1, pos=15)
-        err_est_dir = tb.Float32Col(dflt=1, pos=16)
-        mc_energy = tb.FloatCol(dflt=1, pos=17)
-        local_distance = tb.Float32Col(dflt=1, pos=18)
-        n_pixel = tb.Int16Col(dflt=1, pos=19)
-        n_cluster = tb.Int16Col(dflt=-1, pos=20)
-        obs_id = tb.Int16Col(dflt=1, pos=21)
-        event_id = tb.Int32Col(dflt=1, pos=22)
-        tel_id = tb.Int16Col(dflt=1, pos=23)
+        width = tb.Float32Col(dflt=1, pos=11)
+        length = tb.Float32Col(dflt=1, pos=12)
+        skewness = tb.Float32Col(dflt=1, pos=13)
+        kurtosis = tb.Float32Col(dflt=1, pos=14)
+        psi = tb.Float32Col(dflt=1, pos=15)
         
-        xi_STD = tb.Float32Col(dflt=np.nan, pos=24)
-        xi_STDFIT = tb.Float32Col(dflt=np.nan, pos=25)
+        h_max_STD = tb.Float32Col(dflt=1, pos=16)
+        h_max_STDFIT = tb.Float32Col(dflt=1, pos=17)
         
-        reco_energy_STD = tb.FloatCol(dflt=np.nan, pos=26)
-        reco_energy_STDFIT = tb.FloatCol(dflt=np.nan, pos=27)
+        err_est_pos = tb.Float32Col(dflt=1, pos=18)
+        err_est_dir = tb.Float32Col(dflt=1, pos=19)
+        mc_energy = tb.FloatCol(dflt=1, pos=20)
+        local_distance = tb.Float32Col(dflt=1, pos=21)
+        n_pixel = tb.Int16Col(dflt=1, pos=22)
+        n_cluster = tb.Int16Col(dflt=-1, pos=23)
+        obs_id = tb.Int16Col(dflt=1, pos=24)
+        event_id = tb.Int32Col(dflt=1, pos=25)
+        tel_id = tb.Int16Col(dflt=1, pos=26)
         
-        ellipticity = tb.FloatCol(dflt=1, pos=28)
-        n_tel_reco = tb.FloatCol(dflt=1, pos=29)
-        n_tel_discri = tb.FloatCol(dflt=1, pos=30)
-        mc_core_x = tb.FloatCol(dflt=1, pos=31)
-        mc_core_y = tb.FloatCol(dflt=1, pos=32)
+        xi_STD = tb.Float32Col(dflt=np.nan, pos=27)
+        xi_STDFIT = tb.Float32Col(dflt=np.nan, pos=28)
         
-        reco_core_x_STD = tb.FloatCol(dflt=1, pos=33)
-        reco_core_y_STD = tb.FloatCol(dflt=1, pos=34)
-        reco_core_x_STDFIT = tb.FloatCol(dflt=1, pos=35)
-        reco_core_y_STDFIT = tb.FloatCol(dflt=1, pos=36)
+        reco_energy_STD = tb.FloatCol(dflt=np.nan, pos=29)
+        reco_energy_STDFIT = tb.FloatCol(dflt=np.nan, pos=30)
         
-        mc_h_first_int = tb.FloatCol(dflt=1, pos=37)
+        ellipticity = tb.FloatCol(dflt=1, pos=31)
+        n_tel_reco = tb.FloatCol(dflt=1, pos=32)
+        n_tel_reco_truncated = tb.FloatCol(dflt=1, pos=33)
         
-        offset_STD = tb.Float32Col(dflt=np.nan, pos=38)
-        offset_STDFIT = tb.Float32Col(dflt=np.nan, pos=39)
+        n_tel_discri = tb.FloatCol(dflt=1, pos=34)
+        mc_core_x = tb.FloatCol(dflt=1, pos=35)
+        mc_core_y = tb.FloatCol(dflt=1, pos=36)
         
-        mc_x_max = tb.Float32Col(dflt=np.nan, pos=40)
+        reco_core_x_STD = tb.FloatCol(dflt=1, pos=37)
+        reco_core_y_STD = tb.FloatCol(dflt=1, pos=38)
+        reco_core_x_STDFIT = tb.FloatCol(dflt=1, pos=39)
+        reco_core_y_STDFIT = tb.FloatCol(dflt=1, pos=40)
+        
+        mc_h_first_int = tb.FloatCol(dflt=1, pos=41)
+        
+        offset_STD = tb.Float32Col(dflt=np.nan, pos=42)
+        offset_STDFIT = tb.Float32Col(dflt=np.nan, pos=43)
+        
+        mc_x_max = tb.Float32Col(dflt=np.nan, pos=44)
 
-        alt_STD = tb.Float32Col(dflt=np.nan, pos=41)
-        az_STD = tb.Float32Col(dflt=np.nan, pos=42)
-        alt_STDFIT = tb.Float32Col(dflt=np.nan, pos=43)
-        az_STDFIT = tb.Float32Col(dflt=np.nan, pos=44)
+        alt_STD = tb.Float32Col(dflt=np.nan, pos=45)
+        az_STD = tb.Float32Col(dflt=np.nan, pos=46)
+        alt_STDFIT = tb.Float32Col(dflt=np.nan, pos=47)
+        az_STDFIT = tb.Float32Col(dflt=np.nan, pos=48)
         
-        reco_energy_tel_STD = tb.Float32Col(dflt=np.nan, pos=45)
-        reco_energy_tel_STDFIT = tb.Float32Col(dflt=np.nan, pos=46)
+        reco_energy_tel_STD = tb.Float32Col(dflt=np.nan, pos=49)
+        reco_energy_tel_STDFIT = tb.Float32Col(dflt=np.nan, pos=50)
         
         # from hillas_reco_STD
-        ellipticity_reco_STD = tb.FloatCol(dflt=1, pos=47)
-        local_distance_reco_STD = tb.Float32Col(dflt=1, pos=48)
-        skewness_reco_STD = tb.Float32Col(dflt=1, pos=49)
-        kurtosis_reco_STD = tb.Float32Col(dflt=1, pos=50)
-        width_reco_STD = tb.Float32Col(dflt=1, pos=51)
-        length_reco_STD = tb.Float32Col(dflt=1, pos=52)
-        cog_r_reco_STD = tb.Float32Col(dflt=1, pos=53)
-        cog_x_reco_STD = tb.Float32Col(dflt=1, pos=54)
-        cog_y_reco_STD = tb.Float32Col(dflt=1, pos=55)
-        psi_reco_STD = tb.Float32Col(dflt=1, pos=56)
-        intensity_STD = tb.Float32Col(dflt=1, pos=57)
+        ellipticity_reco_STD = tb.FloatCol(dflt=1, pos=51)
+        local_distance_reco_STD = tb.Float32Col(dflt=1, pos=52)
+        skewness_reco_STD = tb.Float32Col(dflt=1, pos=53)
+        kurtosis_reco_STD = tb.Float32Col(dflt=1, pos=54)
+        width_reco_STD = tb.Float32Col(dflt=1, pos=55)
+        length_reco_STD = tb.Float32Col(dflt=1, pos=56)
+        cog_r_reco_STD = tb.Float32Col(dflt=1, pos=57)
+        cog_x_reco_STD = tb.Float32Col(dflt=1, pos=58)
+        cog_y_reco_STD = tb.Float32Col(dflt=1, pos=59)
+        psi_reco_STD = tb.Float32Col(dflt=1, pos=60)
+        intensity_STD = tb.Float32Col(dflt=1, pos=61)
         
         # from hillas_reco_STDFIT
-        ellipticity_reco_STDFIT = tb.FloatCol(dflt=1, pos=58)
-        local_distance_reco_STDFIT = tb.Float32Col(dflt=1, pos=59)
-        width_reco_STDFIT = tb.Float32Col(dflt=1, pos=60)
-        length_reco_STDFIT = tb.Float32Col(dflt=1, pos=61)
-        cog_r_reco_STDFIT = tb.Float32Col(dflt=1, pos=62)
-        cog_x_reco_STDFIT = tb.Float32Col(dflt=1, pos=63)
-        cog_y_reco_STDFIT = tb.Float32Col(dflt=1, pos=64)
-        psi_reco_STDFIT = tb.Float32Col(dflt=1, pos=65)
-        intensity_STDFIT = tb.Float32Col(dflt=1, pos=66)
+        ellipticity_reco_STDFIT = tb.FloatCol(dflt=1, pos=62)
+        local_distance_reco_STDFIT = tb.Float32Col(dflt=1, pos=63)
+        width_reco_STDFIT = tb.Float32Col(dflt=1, pos=64)
+        length_reco_STDFIT = tb.Float32Col(dflt=1, pos=65)
+        cog_r_reco_STDFIT = tb.Float32Col(dflt=1, pos=66)
+        cog_x_reco_STDFIT = tb.Float32Col(dflt=1, pos=67)
+        cog_y_reco_STDFIT = tb.Float32Col(dflt=1, pos=68)
+        psi_reco_STDFIT = tb.Float32Col(dflt=1, pos=69)
+        intensity_STDFIT = tb.Float32Col(dflt=1, pos=70)
         
-        fval_FIT= tb.Float32Col(dflt=1, pos=67)
-        dof_FIT= tb.Float32Col(dflt=1, pos=68)
-        invalid_FIT= tb.BoolCol(dflt=False, pos=69)
+        fval_FIT= tb.Float32Col(dflt=1, pos=71)
+        dof_FIT= tb.Float32Col(dflt=1, pos=72)
+        invalid_FIT= tb.BoolCol(dflt=False, pos=73)
         
-        truncated_image= tb.BoolCol(dflt=False, pos=70)
-        n_truncated = tb.Int16Col(dflt=0, pos=71)
-        pixels_width_1 = tb.Float32Col(dflt=1, pos=72)
-        pixels_width_2 = tb.Float32Col(dflt=1, pos=73)
-        intensity_width_1 = tb.Float32Col(dflt=1, pos=74)
-        intensity_width_2 = tb.Float32Col(dflt=1, pos=75)
+        truncated_image= tb.BoolCol(dflt=False, pos=74)
+        pixels_width_1 = tb.Float32Col(dflt=1, pos=75)
+        pixels_width_2 = tb.Float32Col(dflt=1, pos=76)
+        intensity_width_1 = tb.Float32Col(dflt=1, pos=77)
+        intensity_width_2 = tb.Float32Col(dflt=1, pos=78)
 
 
     feature_outfile = tb.open_file(args.outfile, mode="w")
@@ -275,6 +281,7 @@ def main():
             hillas_dict_reco_STDFIT,
             info_fit,
             n_tels,
+            n_tels_truncated,
             tot_signal,
             max_signals,
             n_cluster_dict,
@@ -435,6 +442,17 @@ def main():
                     + n_tels["SST_ASTRI_ASTRICam"]
                     + n_tels["SST_GCT_CHEC"]
                 )
+                feature_events[cam_id]["N_LST_truncated"] = n_tels_truncated["LST_LST_LSTCam"]
+                feature_events[cam_id]["N_MST_truncated"] = (
+                    n_tels_truncated["MST_MST_NectarCam"]
+                    + n_tels_truncated["MST_MST_FlashCam"]
+                    + n_tels_truncated["MST_SCT_SCTCam"]
+                )
+                feature_events[cam_id]["N_SST_truncated"] = (
+                    n_tels_truncated["SST_1M_DigiCam"]
+                    + n_tels_truncated["SST_ASTRI_ASTRICam"]
+                    + n_tels_truncated["SST_GCT_CHEC"]
+                )
                 # Variables from hillas_dict
                 feature_events[cam_id]["ellipticity"] = ellipticity.value
                 feature_events[cam_id]["width"] = moments.width.to("m").value
@@ -462,7 +480,10 @@ def main():
                 feature_events[cam_id]["reco_energy_STDFIT"] = reco_energy_STDFIT                
                 
                 feature_events[cam_id]["n_cluster"] = n_cluster_dict[tel_id]
+                
                 feature_events[cam_id]["n_tel_reco"] = n_tels["reco"]
+                feature_events[cam_id]["n_tel_reco_truncated"] = n_truncated
+                
                 feature_events[cam_id]["n_tel_discri"] = n_tels["discri"]
                 
                 feature_events[cam_id]["mc_core_x"] = event.mc.core_x.to("m").value
@@ -526,7 +547,6 @@ def main():
                 feature_events[cam_id]["invalid_FIT"] = info_fit[tel_id]['fit_invalid']
                 
                 feature_events[cam_id]["truncated_image"] = truncated_image[tel_id]
-                feature_events[cam_id]["n_truncated"] = n_truncated
                 feature_events[cam_id]["pixels_width_1"] = leak.leakage1_pixel
                 feature_events[cam_id]["pixels_width_2"] = leak.leakage2_pixel
                 feature_events[cam_id]["intensity_width_1"] = leak.leakage1_intensity
