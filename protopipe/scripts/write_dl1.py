@@ -297,7 +297,7 @@ def main():
             # Angular quantities
             run_array_direction = event.mcheader.run_array_direction
 
-            n_truncated = np.count_nonzero(truncated_image)
+            n_truncated = np.count_nonzero(list(truncated_image.values())
 
             xi_STD = angular_separation(
                 event.mc.az, event.mc.alt, reco_result_STD.az, reco_result_STD.alt

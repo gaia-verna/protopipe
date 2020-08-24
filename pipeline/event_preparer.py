@@ -1317,7 +1317,6 @@ class EventPreparer:
                             
                             if self.image_cutflow.cut("fit truncated invaild", info_fit[tel_id]['fit_invalid']):
                                 continue
-
                             n_tels_truncated[tel_type] += 1
 
                     except (FloatingPointError, hillas.HillasParameterizationError):
