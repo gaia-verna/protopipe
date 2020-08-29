@@ -195,52 +195,56 @@ def main():
         obs_id = tb.Int16Col(dflt=-1, pos=0)
         event_id = tb.Int32Col(dflt=-1, pos=1)
         NTels_trig = tb.Int16Col(dflt=0, pos=2)
+        
         NTels_reco = tb.Int16Col(dflt=0, pos=3)
         NTels_reco_lst = tb.Int16Col(dflt=0, pos=4)
         NTels_reco_mst = tb.Int16Col(dflt=0, pos=5)
         NTels_reco_sst = tb.Int16Col(dflt=0, pos=6)
         
-        NTels_truncated = tb.Int16Col(dflt=0, pos=7)
+        NTels_reco_truncated = tb.Int16Col(dflt=0, pos=7)
+        NTels_reco_lst_truncated = tb.Int16Col(dflt=0, pos=8)
+        NTels_reco_mst_truncated = tb.Int16Col(dflt=0, pos=9)
+        NTels_reco_sst_truncated = tb.Int16Col(dflt=0, pos=10)      
         
-        mc_energy = tb.Float32Col(dflt=np.nan, pos=8)
+        mc_energy = tb.Float32Col(dflt=np.nan, pos=11)
         
-        reco_energy_STD = tb.Float32Col(dflt=np.nan, pos=9)
-        reco_energy_STDFIT = tb.Float32Col(dflt=np.nan, pos=10)
+        reco_energy_STD = tb.Float32Col(dflt=np.nan, pos=12)
+        reco_energy_STDFIT = tb.Float32Col(dflt=np.nan, pos=13)
         
-        reco_alt_STD = tb.Float32Col(dflt=np.nan, pos=11)
-        reco_alt_STDFIT = tb.Float32Col(dflt=np.nan, pos=12)
+        reco_alt_STD = tb.Float32Col(dflt=np.nan, pos=14)
+        reco_alt_STDFIT = tb.Float32Col(dflt=np.nan, pos=15)
         
-        reco_az_STD = tb.Float32Col(dflt=np.nan, pos=13)
-        reco_az_STDFIT = tb.Float32Col(dflt=np.nan, pos=14)
+        reco_az_STD = tb.Float32Col(dflt=np.nan, pos=16)
+        reco_az_STDFIT = tb.Float32Col(dflt=np.nan, pos=17)
 
-        offset_STD = tb.Float32Col(dflt=np.nan, pos=15)
-        offset_STDFIT = tb.Float32Col(dflt=np.nan, pos=16)
+        offset_STD = tb.Float32Col(dflt=np.nan, pos=18)
+        offset_STDFIT = tb.Float32Col(dflt=np.nan, pos=19)
         
-        xi_STD = tb.Float32Col(dflt=np.nan, pos=17)
-        xi_STDFIT = tb.Float32Col(dflt=np.nan, pos=18)
+        xi_STD = tb.Float32Col(dflt=np.nan, pos=20)
+        xi_STDFIT = tb.Float32Col(dflt=np.nan, pos=21)
         
-        ErrEstPos = tb.Float32Col(dflt=np.nan, pos=19)
-        ErrEstDir = tb.Float32Col(dflt=np.nan, pos=20)
+        ErrEstPos = tb.Float32Col(dflt=np.nan, pos=22)
+        ErrEstDir = tb.Float32Col(dflt=np.nan, pos=23)
         
-        gammaness_STD = tb.Float32Col(dflt=np.nan, pos=21)
-        gammaness_STDFIT = tb.Float32Col(dflt=np.nan, pos=22)
+        gammaness_STD = tb.Float32Col(dflt=np.nan, pos=24)
+        gammaness_STDFIT = tb.Float32Col(dflt=np.nan, pos=25)
         
-        success = tb.BoolCol(dflt=False, pos=23)
+        success = tb.BoolCol(dflt=False, pos=26)
         
-        score_STD = tb.Float32Col(dflt=np.nan, pos=24)
-        score_STDFIT = tb.Float32Col(dflt=np.nan, pos=25)
+        score_STD = tb.Float32Col(dflt=np.nan, pos=27)
+        score_STDFIT = tb.Float32Col(dflt=np.nan, pos=28)
         
-        h_max_STD = tb.Float32Col(dflt=np.nan, pos=26)
-        h_max_STDFIT = tb.Float32Col(dflt=np.nan, pos=27)
+        h_max_STD = tb.Float32Col(dflt=np.nan, pos=29)
+        h_max_STDFIT = tb.Float32Col(dflt=np.nan, pos=30)
         
-        reco_core_x_STD = tb.Float32Col(dflt=np.nan, pos=28)
-        reco_core_x_STDFIT = tb.Float32Col(dflt=np.nan, pos=29)
+        reco_core_x_STD = tb.Float32Col(dflt=np.nan, pos=31)
+        reco_core_x_STDFIT = tb.Float32Col(dflt=np.nan, pos=32)
         
-        reco_core_y_STD = tb.Float32Col(dflt=np.nan, pos=30)
-        reco_core_y_STDFIT = tb.Float32Col(dflt=np.nan, pos=31)
+        reco_core_y_STD = tb.Float32Col(dflt=np.nan, pos=33)
+        reco_core_y_STDFIT = tb.Float32Col(dflt=np.nan, pos=34)
         
-        mc_core_x = tb.Float32Col(dflt=np.nan, pos=32)
-        mc_core_y = tb.Float32Col(dflt=np.nan, pos=33)
+        mc_core_x = tb.Float32Col(dflt=np.nan, pos=35)
+        mc_core_y = tb.Float32Col(dflt=np.nan, pos=36)
 
     reco_outfile = tb.open_file(
         mode="w",
@@ -287,6 +291,7 @@ def main():
             hillas_dict_reco_STDFIT,
             info_fit,
             n_tels,
+            n_tels_truncated,
             tot_signal,
             max_signals,
             n_cluster_dict,
@@ -300,7 +305,7 @@ def main():
             n_run=event.r0.obs_id
             
             # N Truncated
-            n_truncated = int(sum(truncated_image.values()))
+            n_truncated = np.count_nonzero(list(truncated_image.values())
             
             # Angular quantities
             run_array_direction = event.mcheader.run_array_direction
@@ -492,6 +497,20 @@ def main():
                     + n_tels["SST_GCT_CHEC"]
                 )
                 reco_event["NTels_reco"] = len(hillas_dict)
+                                           
+                reco_event["NTels_reco_truncated"] = n_truncated
+                reco_events[cam_id]["N_LST_truncated"] = n_tels_truncated["LST_LST_LSTCam"]
+                reco_events[cam_id]["N_MST_truncated"] = (
+                    n_tels_truncated["MST_MST_NectarCam"]
+                    + n_tels_truncated["MST_MST_FlashCam"]
+                    + n_tels_truncated["MST_SCT_SCTCam"]
+                )
+                reco_events[cam_id]["N_SST_truncated"] = (
+                    n_tels_truncated["SST_1M_DigiCam"]
+                    + n_tels_truncated["SST_ASTRI_ASTRICam"]
+                    + n_tels_truncated["SST_GCT_CHEC"]
+                )
+                                        
                 
                 reco_event["reco_energy_STD"] = reco_energy_STD
                 reco_event["reco_energy_STDFIT"] = reco_energy_STDFIT
