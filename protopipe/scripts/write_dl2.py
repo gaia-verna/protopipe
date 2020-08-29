@@ -305,7 +305,7 @@ def main():
             n_run=event.r0.obs_id
             
             # N Truncated
-            n_truncated = np.count_nonzero(list(truncated_image.values())
+            n_truncated = np.count_nonzero(list(truncated_image.values()))
             
             # Angular quantities
             run_array_direction = event.mcheader.run_array_direction
