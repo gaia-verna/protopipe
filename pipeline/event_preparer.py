@@ -78,6 +78,7 @@ PreparedEvent = namedtuple(
         "hillas_dict_reco_STDFIT",
         "info_fit",
         "n_tels",
+        "n_tels_truncated",
         "tot_signal",
         "max_signals",
         "n_cluster_dict",
@@ -719,6 +720,7 @@ def stub(event):
         hillas_dict=None,
         hillas_dict_reco=None,
         n_tels=None,
+        n_tels_truncated=None,
         tot_signal=None,
         max_signals=None,
         n_cluster_dict=None,
@@ -794,8 +796,10 @@ class EventPreparer:
         npix_bounds = config["ImageSelection"]["pixel"]
         ellipticity_bounds = config["ImageSelection"]["ellipticity"]
         nominal_distance_bounds = config["ImageSelection"]["nominal_distance"]
+        
         # Add quality cuts on truncated images
-        npix_bounds_truncated = config["TruncatedImages_Fit"]["ImageSelection"]["pixel_truncated"]         
+        npix_bounds_truncated = config["TruncatedImages_Fit"]["ImageSelection"]["pixel_truncated"]
+        charge_bounds_truncated = config["TruncatedImages_Fit"]["ImageSelection"]["charge_truncated"]
 
         if debug:
             camera_radius(
@@ -828,8 +832,9 @@ class EventPreparer:
                     (
                         "min pixel truncated", lambda s: np.count_nonzero(s) < npix_bounds_truncated[0]),
                     (
-                        "fit truncated invaild", lambda s: s==True
-                    ),
+                        "min charge truncated", lambda x: x < charge_bounds_truncated[0]),
+                    (
+                        "fit truncated invaild", lambda s: s==True),
                 ]
             )
         )
@@ -1082,6 +1087,15 @@ class EventPreparer:
                 "SST_ASTRI_ASTRICam": 0,
                 "SST_GCT_CHEC": 0,
             }
+            n_tels_truncated = {
+                "LST_LST_LSTCam": 0,
+                "MST_MST_NectarCam": 0,
+                "MST_MST_FlashCam": 0,
+                "MST_SCT_SCTCam": 0,
+                "SST_1M_DigiCam": 0,
+                "SST_ASTRI_ASTRICam": 0,
+                "SST_GCT_CHEC": 0,
+            }
             n_cluster_dict = {}
             impact_dict_reco = {}  # impact distance measured in tilt system
             
@@ -1274,10 +1288,13 @@ class EventPreparer:
                         if self.image_cutflow.cut(
                             "close to the edge", moments_reco, camera.cam_id
                         ):
-                            truncated_image[tel_id]=True
                             
                             if self.image_cutflow.cut("min pixel truncated", image_biggest):
-                                continue     
+                                continue 
+                            if self.image_cutflow.cut("min charge truncated", np.sum(image_biggest)):
+                                continue 
+                            
+                            truncated_image[tel_id]=True
                             
                             if num_islands <= 1:
                                 mask_fit = mask_dilate(mask_reco.copy())
@@ -1300,15 +1317,16 @@ class EventPreparer:
                             
                             if self.image_cutflow.cut("fit truncated invaild", info_fit[tel_id]['fit_invalid']):
                                 continue
-                            
+                            n_tels_truncated[tel_type] += 1
 
                     except (FloatingPointError, hillas.HillasParameterizationError):
                         continue
 
                 point_azimuth_dict[tel_id] = event.mc.tel[tel_id].azimuth_raw * u.rad
                 point_altitude_dict[tel_id] = event.mc.tel[tel_id].altitude_raw * u.rad
-
+                
                 n_tels[tel_type] += 1
+                
                 hillas_dict[tel_id] = moments
                 hillas_dict_reco_STD[tel_id] = moments_reco_STD
                 hillas_dict_reco_STDFIT[tel_id] = moments_reco
@@ -1320,6 +1338,7 @@ class EventPreparer:
             n_tels["reco"] = len(hillas_dict_reco_STD)
             #n_tels["reco_STDFIT"] = len(hillas_dict_reco_STDFIT)
             n_tels["discri"] = len(hillas_dict)
+            
             if self.event_cutflow.cut("min2Tels reco", n_tels["reco"]):
                 if return_stub:
                     yield stub(event)
@@ -1427,6 +1446,7 @@ class EventPreparer:
                 hillas_dict_reco_STDFIT = hillas_dict_reco_STDFIT,
                 info_fit=info_fit,
                 n_tels=n_tels,
+                n_tels_truncated=n_tels_truncated,
                 tot_signal=tot_signal,
                 max_signals=max_signals,
                 n_cluster_dict=n_cluster_dict,
