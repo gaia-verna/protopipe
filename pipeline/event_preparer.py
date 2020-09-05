@@ -75,7 +75,7 @@ PreparedEvent = namedtuple(
         "leak_reco",
         "hillas_dict",
         "hillas_dict_reco_STD",
-        "hillas_dict_reco_STDFIT",
+        "hillas_dict_reco_FIT",
         "info_fit",
         "n_tels",
         "n_tels_truncated",
@@ -83,9 +83,9 @@ PreparedEvent = namedtuple(
         "max_signals",
         "n_cluster_dict",
         "reco_result_STD",
-        "reco_result_STDFIT",
+        "reco_result_FIT",
         "impact_dict_STD",
-        "impact_dict_STDFIT",
+        "impact_dict_FIT",
     ],
 )
 
@@ -871,7 +871,7 @@ class EventPreparer:
                     ("min2Tels trig", lambda x: x < min_ntel),
                     ("min2Tels reco", lambda x: x < min_ntel),
                     ("direction nan STD", lambda x: x.is_valid is False),
-                    ("direction nan STDFIT", lambda x: x.is_valid is False),
+                    ("direction nan FIT", lambda x: x.is_valid is False),
                     
                 ]
             )
@@ -1075,7 +1075,7 @@ class EventPreparer:
             weight = {}
             hillas_dict = {}  # for discrimination          
             hillas_dict_reco_STD = {}  # for direction reconstruction
-            hillas_dict_reco_STDFIT = {}  # for direction reconstruction
+            hillas_dict_reco_FIT = {}  # for direction reconstruction
             info_fit={}
             n_tels = {
                 "tot": len(event.dl0.tels_with_data),
@@ -1100,7 +1100,7 @@ class EventPreparer:
             impact_dict_reco = {}  # impact distance measured in tilt system
             
             impact_dict_STD = {}
-            impact_dict_STDFIT = {}
+            impact_dict_FIT = {}
 
             point_azimuth_dict = {}
             point_altitude_dict = {}
@@ -1283,8 +1283,6 @@ class EventPreparer:
                             'fit_invalid':True
                         }
                         
-                        moments_reco_STD = moments_reco
-
                         if self.image_cutflow.cut(
                             "close to the edge", moments_reco, camera.cam_id
                         ):
@@ -1295,30 +1293,32 @@ class EventPreparer:
                                 continue 
                             
                             truncated_image[tel_id]=True
-                            
-                            if num_islands <= 1:
-                                mask_fit = mask_dilate(mask_reco.copy())
-                            elif num_islands > 1:
-                                mask_fit = mask_dilate(mask_biggest.copy())
-                            
-                            x = camera[mask_fit].pix_x.value
-                            y = camera[mask_fit].pix_y.value
-                            signal_obs = pmt_signal[mask_fit]
-                            area_pix = camera[mask_fit].pix_area.value
-
-                            ped_obs = pmt_signal[~mask_fit]
-                            var_ped = np.var(ped_obs)
-                            moments_reco, info_fit[tel_id]['fval'], Lim, info_fit[tel_id]['fit_invalid'],info_fit[tel_id]['dof'] = hillas_parameters_fit(
-                                moments_reco,
-                                camera,
-                                pmt_signal,
-                                mask_fit, 
-                                truncated=truncated_image[tel_id])
-                            
-                            if self.image_cutflow.cut("fit truncated invaild", info_fit[tel_id]['fit_invalid']):
-                                continue
                             n_tels_truncated[tel_type] += 1
+                        
+                        moments_reco_STD = moments_reco
+                        
+                        if num_islands <= 1:
+                            mask_fit = mask_dilate(mask_reco.copy())
+                        elif num_islands > 1:
+                            mask_fit = mask_dilate(mask_biggest.copy())
 
+                        x = camera[mask_fit].pix_x.value
+                        y = camera[mask_fit].pix_y.value
+                        signal_obs = pmt_signal[mask_fit]
+                        area_pix = camera[mask_fit].pix_area.value
+
+                        ped_obs = pmt_signal[~mask_fit]
+                        var_ped = np.var(ped_obs)
+                        moments_reco_FIT, info_fit[tel_id]['fval'], Lim, info_fit[tel_id]['fit_invalid'],info_fit[tel_id]['dof'] = hillas_parameters_fit(
+                            moments_reco,
+                            camera,
+                            pmt_signal,
+                            mask_fit, 
+                            truncated=truncated_image[tel_id])
+
+                        if self.image_cutflow.cut("fit truncated invaild", info_fit[tel_id]['fit_invalid']):
+                            continue
+                            
                     except (FloatingPointError, hillas.HillasParameterizationError):
                         continue
 
@@ -1329,14 +1329,13 @@ class EventPreparer:
                 
                 hillas_dict[tel_id] = moments
                 hillas_dict_reco_STD[tel_id] = moments_reco_STD
-                hillas_dict_reco_STDFIT[tel_id] = moments_reco
+                hillas_dict_reco_FIT[tel_id] = moments_reco_FIT
                 n_pixel_dict[tel_id] = len(np.where(image_extended > 0)[0])
                 tot_signal += moments.intensity
                 
                 weight[tel_id] = moments_reco_STD.intensity*(moments_reco_STD.length/moments_reco_STD.width)
             
             n_tels["reco"] = len(hillas_dict_reco_STD)
-            #n_tels["reco_STDFIT"] = len(hillas_dict_reco_STDFIT)
             n_tels["discri"] = len(hillas_dict)
             
             if self.event_cutflow.cut("min2Tels reco", n_tels["reco"]):
@@ -1365,8 +1364,8 @@ class EventPreparer:
                         },
                     )
                         
-                    reco_result_STDFIT = self.shower_reco.predict(
-                        hillas_dict_reco_STDFIT,
+                    reco_result_FIT = self.shower_reco.predict(
+                        hillas_dict_reco_FIT,
                         weight,
                         event.inst,
                         SkyCoord(alt=alt, az=az, frame="altaz"),
@@ -1396,9 +1395,9 @@ class EventPreparer:
                             0 * u.m,
                             frame=ground_frame,
                         )
-                        core_ground_STDFIT = SkyCoord(
-                            reco_result_STDFIT.core_x,
-                            reco_result_STDFIT.core_y,
+                        core_ground_FIT = SkyCoord(
+                            reco_result_FIT.core_x,
+                            reco_result_FIT.core_y,
                             0 * u.m,
                             frame=ground_frame,
                         )
@@ -1408,9 +1407,9 @@ class EventPreparer:
                             (core_ground_STD.x - tel_ground.x) ** 2
                             + (core_ground_STD.y - tel_ground.y) ** 2
                         )
-                        impact_dict_STDFIT[tel_id] = np.sqrt(
-                            (core_ground_STDFIT.x - tel_ground.x) ** 2
-                            + (core_ground_STDFIT.y - tel_ground.y) ** 2
+                        impact_dict_FIT[tel_id] = np.sqrt(
+                            (core_ground_FIT.x - tel_ground.x) ** 2
+                            + (core_ground_FIT.y - tel_ground.y) ** 2
                         )
             except Exception as e:
                 print("exception in reconstruction:", e)
@@ -1425,7 +1424,7 @@ class EventPreparer:
                     yield stub(event)
                 else:
                     continue
-            if self.event_cutflow.cut("direction nan STDFIT", reco_result_STDFIT):
+            if self.event_cutflow.cut("direction nan FIT", reco_result_FIT):
                 if return_stub:
                     yield stub(event)
                 else:
@@ -1443,7 +1442,7 @@ class EventPreparer:
                 leak_reco=leak_reco,
                 hillas_dict=hillas_dict,
                 hillas_dict_reco_STD = hillas_dict_reco_STD,
-                hillas_dict_reco_STDFIT = hillas_dict_reco_STDFIT,
+                hillas_dict_reco_FIT = hillas_dict_reco_FIT,
                 info_fit=info_fit,
                 n_tels=n_tels,
                 n_tels_truncated=n_tels_truncated,
@@ -1451,7 +1450,7 @@ class EventPreparer:
                 max_signals=max_signals,
                 n_cluster_dict=n_cluster_dict,
                 reco_result_STD = reco_result_STD, 
-                reco_result_STDFIT = reco_result_STDFIT, 
+                reco_result_FIT = reco_result_FIT, 
                 impact_dict_STD = impact_dict_STD,
-                impact_dict_STDFIT = impact_dict_STDFIT
+                impact_dict_FIT = impact_dict_FIT
             )
