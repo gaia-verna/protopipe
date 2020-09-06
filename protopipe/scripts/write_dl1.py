@@ -212,8 +212,8 @@ def main():
             calibration_status,
             mc_phe_image,
             n_pixel_dict,
-	    truncated_image,
-	    leak_reco,
+            truncated_image,
+            leak_reco,
             hillas_dict,
             hillas_dict_reco,
             n_tels,
@@ -264,6 +264,7 @@ def main():
                 for idx, tel_id in enumerate(hillas_dict.keys()):
                     cam_id = event.inst.subarray.tel[tel_id].camera.cam_id
                     moments = hillas_dict[tel_id]
+                    moments_reco = hillas_dict_reco[tel_id]
                     model = regressor.model_dict[cam_id]
 
                     features_img = np.array(
@@ -273,6 +274,7 @@ def main():
                             moments.width.value,
                             moments.length.value,
                             h_max.value,
+                            moments_reco.local_distance_reco
                         ]
                     )
 
