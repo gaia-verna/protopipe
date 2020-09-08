@@ -22,6 +22,7 @@ def prepare_data(ds, cuts, label=None):
     ds['log10_charge'] = np.log10(ds['sum_signal_cam'])
     ds['log10_impact'] = np.log10(ds['impact_dist'])
     ds['log10_mc_energy'] = np.log10(ds['mc_energy'])
+    ds['local_dist_reco'] = ds['local_dist_reco']
     try:  # for classification
         ds['log10_reco_energy'] = np.log10(ds['reco_energy'])
         ds['log10_reco_energy_tel'] = np.log10(ds['reco_energy_tel'])
