@@ -2,9 +2,11 @@ General:
  model_type: 'regressor'
  # [...] = your analysis local path
  # Please, refer to directory structure shown at Lugano
- data_dir: '[...]/data/DL1/for_energy_estimation'
+
+ data_dir: '/sps/hep/cta/cppm/verna/Analysis/Truncated_Images_Protopipe/STD_Protopipe_NO/data/DL1/for_energy_estimation'
  data_file: 'dl1_{}_gamma_merged.h5'
- outdir: '[...]/estimators/energy_regressor'
+ outdir: '/sps/hep/cta/cppm/verna/Analysis/Truncated_Images_Protopipe/STD_Protopipe_NO/estimators/energy_regressor/energy_regressor_new_RF'
+
  cam_id_list: ['LSTCam', 'NectarCam']
  table_name_template: 'feature_events_'
 
@@ -29,6 +31,8 @@ FeatureList:
  - 'width'
  - 'length'
  - 'h_max'
+ - 'local_distance_reco'
+#- 'truncated_image'
 
 SigFiducialCuts:
  - 'xi <= 0.5'
