@@ -366,7 +366,7 @@ def main():
                             moments.width.value,
                             moments.length.value,
                             h_max_STD.value,
-                            moments_reco_STD.local_distance_reco_STD.value               
+                            moments_reco_STD.r.value               
                         ]
                     )
                     
@@ -377,7 +377,7 @@ def main():
                             moments.width.value,
                             moments.length.value,
                             h_max_STDFIT.value,
-                            moments_reco_STDFIT.local_distance_reco_STDFIT.value
+                            moments_reco_STDFIT.r.value
                         ]
                     )
 
