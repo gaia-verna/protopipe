@@ -19,14 +19,16 @@ def load_obj(name ):
 
 def prepare_data(ds, cuts, label=None):
     """Add variables in data frame"""
-    
+ 
     ds['log10_charge'] = np.log10(ds['sum_signal_cam'])
     ds['log10_mc_energy'] = np.log10(ds['mc_energy'])
     
     # STD
-    #ds['log10_impact_STD'] = np.log10(ds['impact_dist_STD'])
+    ds['log10_impact_STD'] = np.log10(ds['impact_dist_STD'])
+    ds['local_distance_reco_STD'] = ds['local_distance_reco_STD']
     # STD-FIT
-    ds['log10_impact_STDFIT'] = np.log10(ds['impact_dist_STDFIT'])
+    #ds['log10_impact_STDFIT'] = np.log10(ds['impact_dist_STDFIT'])
+    #ds['local_distance_reco_STDFIT'] = ds['local_distance_reco_STDFIT']
     
     try:  # for classification
         # STD
