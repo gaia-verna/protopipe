@@ -353,6 +353,7 @@ def main():
                 for idx, tel_id in enumerate(hillas_dict.keys()):
                     cam_id = event.inst.subarray.tel[tel_id].camera.cam_id
                     moments = hillas_dict[tel_id]
+                    moments_reco = hillas_dict_reco[tel_id]
                     model_STD = regressor_STD.model_dict[cam_id]
                     model_STDFIT = regressor_STDFIT.model_dict[cam_id]
                     
@@ -364,6 +365,7 @@ def main():
                             moments.width.value,
                             moments.length.value,
                             h_max_STD.value,
+                            moments_reco.local_distance_reco_STD.value               
                         ]
                     )
                     
@@ -374,6 +376,7 @@ def main():
                             moments.width.value,
                             moments.length.value,
                             h_max_STDFIT.value,
+                            moments_reco.local_distance_reco_STDFIT.value
                         ]
                     )
 
