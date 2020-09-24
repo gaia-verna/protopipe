@@ -352,10 +352,11 @@ def main():
 
                 for idx, tel_id in enumerate(hillas_dict.keys()):
                     cam_id = event.inst.subarray.tel[tel_id].camera.cam_id
-                    moments = hillas_dict[tel_id]
+                    moments_reco_STD = hillas_dict_reco_STD[tel_id]
+                    moments_reco_FIT = hillas_dict_reco_FIT[tel_id]
                     model_STD = regressor_STD.model_dict[cam_id]
                     model_FIT = regressor_FIT.model_dict[cam_id]
-                    
+
 
                     features_img_STD = np.array(
                         [
@@ -364,9 +365,10 @@ def main():
                             moments.width.value,
                             moments.length.value,
                             h_max_STD.value,
+                            moments_reco_STD.r.value
                         ]
                     )
-                    
+
                     features_img_FIT = np.array(
                         [
                             np.log10(moments.intensity),
@@ -374,6 +376,7 @@ def main():
                             moments.width.value,
                             moments.length.value,
                             h_max_FIT.value,
+                            moments_reco_FIT.r.value
                         ]
                     )
 
