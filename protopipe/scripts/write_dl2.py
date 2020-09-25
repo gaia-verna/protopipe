@@ -201,9 +201,9 @@ def main():
         NTels_reco_sst = tb.Int16Col(dflt=0, pos=6)
         
         NTels_reco_truncated = tb.Int16Col(dflt=0, pos=7)
-        NTels_reco_lst_truncated = tb.Int16Col(dflt=1, pos=8)
-        NTels_reco_mst_truncated = tb.Int16Col(dflt=1, pos=9)
-        NTels_reco_sst_truncated = tb.Int16Col(dflt=1, pos=10)
+        NTels_reco_lst_truncated = tb.Int16Col(dflt=0, pos=8)
+        NTels_reco_mst_truncated = tb.Int16Col(dflt=0, pos=9)
+        NTels_reco_sst_truncated = tb.Int16Col(dflt=0, pos=10)
                 
         mc_energy = tb.Float32Col(dflt=np.nan, pos=11)
         
@@ -502,13 +502,13 @@ def main():
                     + n_tels["SST_GCT_CHEC"]
                 )
                 reco_event["NTels_reco_truncated"] = n_truncated
-                reco_event["NTels_reco_lst_truncated "] = n_tels_truncated["LST_LST_LSTCam"]
-                reco_event["NTels_reco_mst_truncated "] = (
+                reco_event["NTels_reco_lst_truncated"] = n_tels_truncated["LST_LST_LSTCam"]
+                reco_event["NTels_reco_mst_truncated"] = (
                     n_tels_truncated["MST_MST_NectarCam"]
                     + n_tels_truncated["MST_MST_FlashCam"]
                     + n_tels_truncated["MST_SCT_SCTCam"]
                 )
-                reco_event["NTels_reco_sst_truncated "] = (
+                reco_event["NTels_reco_sst_truncated"] = (
                     n_tels_truncated["SST_1M_DigiCam"]
                     + n_tels_truncated["SST_ASTRI_ASTRICam"]
                     + n_tels_truncated["SST_GCT_CHEC"]
