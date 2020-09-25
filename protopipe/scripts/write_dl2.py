@@ -502,13 +502,13 @@ def main():
                     + n_tels["SST_GCT_CHEC"]
                 )
                 reco_event["NTels_reco_truncated"] = n_truncated
-                reco_events[cam_id]["NTels_reco_lst_truncated "] = n_tels_truncated["LST_LST_LSTCam"]
-                reco_events[cam_id]["NTels_reco_mst_truncated "] = (
+                reco_event["NTels_reco_lst_truncated "] = n_tels_truncated["LST_LST_LSTCam"]
+                reco_event["NTels_reco_mst_truncated "] = (
                     n_tels_truncated["MST_MST_NectarCam"]
                     + n_tels_truncated["MST_MST_FlashCam"]
                     + n_tels_truncated["MST_SCT_SCTCam"]
                 )
-                reco_events[cam_id]["NTels_reco_sst_truncated "] = (
+                reco_event["NTels_reco_sst_truncated "] = (
                     n_tels_truncated["SST_1M_DigiCam"]
                     + n_tels_truncated["SST_ASTRI_ASTRICam"]
                     + n_tels_truncated["SST_GCT_CHEC"]
