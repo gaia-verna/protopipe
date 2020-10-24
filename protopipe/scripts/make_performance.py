@@ -60,10 +60,12 @@ def main():
         infile = os.path.join(indir, template_input_file.format(args.mode, particle))
         evt_dict[particle] = pd.read_hdf(infile, key='reco_events')
 
+        
+    string_offset = cfg['column_definition']['offset'] + ' <= {}'
     # Apply offset cut to proton and electron
     for particle in ['electron', 'proton']:
         # print('Initial stat: {} {}'.format(len(evt_dict[particle]), particle))
-        evt_dict[particle] = evt_dict[particle].query('offset <= {}'.format(
+        evt_dict[particle] = evt_dict[particle].query(string_offset.format(
             cfg['particle_information'][particle]['offset_cut'])
         )
 
@@ -108,7 +110,8 @@ def main():
             emin = ereco[ibin]
             emax = ereco[ibin + 1]
 
-            energy_query = 'reco_energy > {} and reco_energy <= {}'.format(
+            string_energy_query =  cfg['column_definition']['reco_energy'] + ' > {} and ' + cfg['column_definition']['reco_energy'] + ' <= {}'
+            energy_query = string_energy_query.format(
                 emin.value, emax.value
             )
             data = evt_dict['gamma'].query(energy_query).copy()
@@ -122,7 +125,7 @@ def main():
                 # import sys
                 # sys.exit()
 
-            psf = np.percentile(data['offset'], radius)
+            psf = np.percentile(data[cfg['column_definition']['offset']], radius)
             psf_err = psf / np.sqrt(len(data))
 
             thsq_values.append(psf)

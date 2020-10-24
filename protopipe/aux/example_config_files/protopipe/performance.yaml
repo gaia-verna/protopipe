@@ -76,8 +76,11 @@ column_definition:
  mc_energy: 'mc_energy'
  # Column name for reconstructed energy
  reco_energy: 'reco_energy'
+ # Column name for offset
+ offset: 'offset'
  # Column name for classification output
  classification_output:
   name: 'gammaness'
   range: [0, 1]
+  # Column name for angular distance to the src
  angular_distance_to_the_src: 'xi'
