@@ -6,6 +6,7 @@ channels:
 dependencies:
   - ctapipe=0.7.0
   - gammapy=0.8
+  - pyirf=0.3.0
   - ipython
   - nbsphinx
   - numpydoc
