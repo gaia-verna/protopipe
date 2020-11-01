@@ -19,7 +19,10 @@ analysis:
 
  # Normalisation between ON and OFF regions
  alpha: 0.2
-
+ 
+ # Radius to use for calculating bg rate
+ max_bg_radius: 1.
+ 
  # Minimimal significance
  min_sigma: 5
 
@@ -49,8 +52,7 @@ particle_information:
   e_max: 330
   gen_radius: 1400
   gen_gamma: -2
-  diff_cone: 0
-  
+  diff_cone: 0 
 
  proton:
   num_use: 20
@@ -60,7 +62,6 @@ particle_information:
   gen_radius: 1900
   gen_gamma: -2
   diff_cone: 10
-  max_bg_radius: 1.
 
  electron:
   num_use: 20
@@ -70,7 +71,6 @@ particle_information:
   gen_radius: 1900
   gen_gamma: -2
   diff_cone: 10
-  max_bg_radius: 1.
 
 column_definition:
  # Column name for true energy
