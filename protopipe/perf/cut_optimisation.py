@@ -320,7 +320,7 @@ class CutsOptimisation(object):
             omega_simu = 1.
 
         nsimu = conf_part['n_simulated']
-        index_simu = conf_part['gen_gamma']
+        index_simu = np.absolute(conf_part['gen_gamma'])
         emin = conf_part['e_min'] * u.TeV
         emax = conf_part['e_max'] * u.TeV
         amplitude = 1. * u.Unit('1 / (cm2 s TeV)')
@@ -411,10 +411,10 @@ class CutsOptimisation(object):
                 # Correct number of background due to acceptance
                 acceptance_g = 2 * np.pi * (1 - np.cos(th_cut.to('rad').value))
                 acceptance_p = 2 * np.pi * (
-                        1 - np.cos(self.config['particle_information']['proton']['offset_cut'] * u.deg.to('rad'))
+                        1 - np.cos(self.config["analysis"]["max_bg_radius"] * u.deg.to('rad'))
                 )
                 acceptance_e = 2 * np.pi * (
-                        1 - np.cos(self.config['particle_information']['electron']['offset_cut'] * u.deg.to('rad'))
+                        1 - np.cos(self.config["analysis"]["max_bg_radius"] * u.deg.to('rad'))
                 )
 
                 # Add corrected weight taking into angular cuts applied to gamma-rays
