@@ -43,30 +43,34 @@ analysis:
 
 particle_information:
  gamma:
-  n_events_per_file: 1000000  #  10**5 * 10
+  num_use: 10
+  num_showers: 10**5
   e_min: 0.003
   e_max: 330
   gen_radius: 1400
+  gen_gamma: -2
   diff_cone: 0
-  gen_gamma: 2
+  
 
  proton:
-  n_events_per_file: 4000000  #  2 * 10**5 * 20
+  num_use: 20
+  num_showers: 2 * 10**5
   e_min: 0.004
   e_max: 600
   gen_radius: 1900
+  gen_gamma: -2
   diff_cone: 10
-  gen_gamma: 2
-  offset_cut: 1.
+  max_bg_radius: 1.
 
  electron:
-  n_events_per_file: 2000000  #  10**5 * 20
+  num_use: 20
+  num_showers: 10**5
   e_min: 0.003
   e_max: 330
   gen_radius: 1900
+  gen_gamma: -2
   diff_cone: 10
-  gen_gamma: 2
-  offset_cut: 1.
+  max_bg_radius: 1.
 
 column_definition:
  # Column name for true energy
