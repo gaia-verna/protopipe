@@ -15,6 +15,10 @@ analysis:
  
  # Radius to use for calculating bg rate
  max_bg_radius: 1.
+ 
+ # Number of boostrap samples 
+ # If n_boostrap == 1 -> no boostrap method applied
+ n_boostrap: 1
 
 particle_information:
  gamma:
