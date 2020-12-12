@@ -1,0 +1,380 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CutsOptimisation &mdash; protopipe 0.3.0-dev0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Irf" href="protopipe.perf.Irf.html" />
+    <link rel="prev" title="CutsDiagnostic" href="protopipe.perf.CutsDiagnostic.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> protopipe
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.3.0-dev0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Workflow and usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/index.html">How to contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../AUTHORS.html">Authors</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Structure</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../pipeline/index.html">pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mva/index.html">mva</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../perf/index.html">perf</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../perf/index.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../perf/index.html#details">Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../perf/index.html#proposals-for-improvements-and-or-fixes">Proposals for improvements and/or fixes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../perf/index.html#reference-api">Reference/API</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../perf/index.html#module-protopipe.perf">protopipe.perf Package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../perf/index.html#classes">Classes</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="protopipe.perf.BkgData.html">BkgData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="protopipe.perf.CutsApplicator.html">CutsApplicator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="protopipe.perf.CutsDiagnostic.html">CutsDiagnostic</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">CutsOptimisation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="protopipe.perf.Irf.html">Irf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="protopipe.perf.IrfMaker.html">IrfMaker</a></li>
+<li class="toctree-l4"><a class="reference internal" href="protopipe.perf.SensitivityMaker.html">SensitivityMaker</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../scripts/index.html">scripts</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">protopipe</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../perf/index.html">perf</a> &raquo;</li>
+        
+      <li>CutsOptimisation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/protopipe.perf.CutsOptimisation.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="cutsoptimisation">
+<h1>CutsOptimisation<a class="headerlink" href="#cutsoptimisation" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="protopipe.perf.CutsOptimisation">
+<em class="property">class </em><code class="sig-prename descclassname">protopipe.perf.</code><code class="sig-name descname">CutsOptimisation</code><span class="sig-paren">(</span><em class="sig-param">config</em>, <em class="sig-param">evt_dict</em>, <em class="sig-param">verbose_level=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/protopipe/perf/cut_optimisation.html#CutsOptimisation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#protopipe.perf.CutsOptimisation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Class used to find best cutoff to obtain minimal
+sensitivity in a given amount of time.
+Parameters
+———-
+config: <cite>dict</cite></p>
+<blockquote>
+<div><p>Configuration file</p>
+</div></blockquote>
+<dl class="simple">
+<dt>evt_dict: <cite>dict</cite></dt><dd><p>Dictionary of <cite>pandas</cite> files</p>
+</dd>
+</dl>
+<p class="rubric">Methods Summary</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#protopipe.perf.CutsOptimisation.compute_weight" title="protopipe.perf.CutsOptimisation.compute_weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_weight</span></code></a>(energy, particle, model)</p></td>
+<td><p>Weight particles, according to: [phi_exp(E) / phi_simu(E)] * (t_obs / t_simu) where E is the true energy of the particles</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#protopipe.perf.CutsOptimisation.find_best_cutoff" title="protopipe.perf.CutsOptimisation.find_best_cutoff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_best_cutoff</span></code></a>(energy_values, angular_values)</p></td>
+<td><p>Find best cutoff to reach the best sensitivity.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#protopipe.perf.CutsOptimisation.find_best_cutoff_for_one_bin" title="protopipe.perf.CutsOptimisation.find_best_cutoff_for_one_bin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_best_cutoff_for_one_bin</span></code></a>(binned_data)</p></td>
+<td><p>Find the best cut off for one bin os the phase space</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#protopipe.perf.CutsOptimisation.get_binned_data" title="protopipe.perf.CutsOptimisation.get_binned_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_binned_data</span></code></a>(g, p, e[, nbins, score_range])</p></td>
+<td><p>Returns binned data as a dictionnary</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#protopipe.perf.CutsOptimisation.weight_events" title="protopipe.perf.CutsOptimisation.weight_events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight_events</span></code></a>(model_dict, colname_mc_energy)</p></td>
+<td><p>Add a weight column to the files, in order to scale simulated data to reality.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#protopipe.perf.CutsOptimisation.write_results" title="protopipe.perf.CutsOptimisation.write_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_results</span></code></a>(outdir, outfile, format[, …])</p></td>
+<td><p>Write results with astropy utilities</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods Documentation</p>
+<dl class="method">
+<dt id="protopipe.perf.CutsOptimisation.compute_weight">
+<code class="sig-name descname">compute_weight</code><span class="sig-paren">(</span><em class="sig-param">energy</em>, <em class="sig-param">particle</em>, <em class="sig-param">model</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/protopipe/perf/cut_optimisation.html#CutsOptimisation.compute_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#protopipe.perf.CutsOptimisation.compute_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Weight particles, according to: [phi_exp(E) / phi_simu(E)] * (t_obs / t_simu)
+where E is the true energy of the particles</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="protopipe.perf.CutsOptimisation.find_best_cutoff">
+<code class="sig-name descname">find_best_cutoff</code><span class="sig-paren">(</span><em class="sig-param">energy_values</em>, <em class="sig-param">angular_values</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/protopipe/perf/cut_optimisation.html#CutsOptimisation.find_best_cutoff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#protopipe.perf.CutsOptimisation.find_best_cutoff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find best cutoff to reach the best sensitivity. Optimisation is done as a function
+of energy and theta square cut. Correct the number of events
+according to the ON region which correspond to the angular cut applied to
+the gamma-ray events.
+Parameters
+———-
+energy_values: <cite>astropy.Quantity</cite></p>
+<blockquote>
+<div><p>Energy bins</p>
+</div></blockquote>
+<dl class="simple">
+<dt>angular_values: <cite>astropy.Quantity</cite></dt><dd><p>Angular cuts</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="protopipe.perf.CutsOptimisation.find_best_cutoff_for_one_bin">
+<code class="sig-name descname">find_best_cutoff_for_one_bin</code><span class="sig-paren">(</span><em class="sig-param">binned_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/protopipe/perf/cut_optimisation.html#CutsOptimisation.find_best_cutoff_for_one_bin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#protopipe.perf.CutsOptimisation.find_best_cutoff_for_one_bin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the best cut off for one bin os the phase space</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="protopipe.perf.CutsOptimisation.get_binned_data">
+<code class="sig-name descname">get_binned_data</code><span class="sig-paren">(</span><em class="sig-param">g, p, e, nbins=100, score_range=[-1, 1]</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/protopipe/perf/cut_optimisation.html#CutsOptimisation.get_binned_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#protopipe.perf.CutsOptimisation.get_binned_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns binned data as a dictionnary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="protopipe.perf.CutsOptimisation.weight_events">
+<code class="sig-name descname">weight_events</code><span class="sig-paren">(</span><em class="sig-param">model_dict</em>, <em class="sig-param">colname_mc_energy</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/protopipe/perf/cut_optimisation.html#CutsOptimisation.weight_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#protopipe.perf.CutsOptimisation.weight_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a weight column to the files, in order to scale simulated data to reality.
+Parameters
+———-
+model_dict: dict</p>
+<blockquote>
+<div><p>Dictionary of models</p>
+</div></blockquote>
+<dl class="simple">
+<dt>colname_mc_energy: str</dt><dd><p>Column name for the true energy</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="protopipe.perf.CutsOptimisation.write_results">
+<code class="sig-name descname">write_results</code><span class="sig-paren">(</span><em class="sig-param">outdir</em>, <em class="sig-param">outfile</em>, <em class="sig-param">format</em>, <em class="sig-param">overwrite=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/protopipe/perf/cut_optimisation.html#CutsOptimisation.write_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#protopipe.perf.CutsOptimisation.write_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write results with astropy utilities</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="protopipe.perf.Irf.html" class="btn btn-neutral float-right" title="Irf" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="protopipe.perf.CutsDiagnostic.html" class="btn btn-neutral float-left" title="CutsDiagnostic" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Michele Peresano
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

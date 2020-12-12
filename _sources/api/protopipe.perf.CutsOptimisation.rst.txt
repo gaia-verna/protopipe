@@ -1,0 +1,27 @@
+CutsOptimisation
+================
+
+.. currentmodule:: protopipe.perf
+
+.. autoclass:: CutsOptimisation
+   :show-inheritance:
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+
+      ~CutsOptimisation.compute_weight
+      ~CutsOptimisation.find_best_cutoff
+      ~CutsOptimisation.find_best_cutoff_for_one_bin
+      ~CutsOptimisation.get_binned_data
+      ~CutsOptimisation.weight_events
+      ~CutsOptimisation.write_results
+
+   .. rubric:: Methods Documentation
+
+   .. automethod:: compute_weight
+   .. automethod:: find_best_cutoff
+   .. automethod:: find_best_cutoff_for_one_bin
+   .. automethod:: get_binned_data
+   .. automethod:: weight_events
+   .. automethod:: write_results

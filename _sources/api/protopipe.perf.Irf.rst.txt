@@ -1,0 +1,7 @@
+Irf
+===
+
+.. currentmodule:: protopipe.perf
+
+.. autoclass:: Irf
+   :show-inheritance:

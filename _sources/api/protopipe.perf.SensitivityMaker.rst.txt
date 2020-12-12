@@ -1,0 +1,21 @@
+SensitivityMaker
+================
+
+.. currentmodule:: protopipe.perf
+
+.. autoclass:: SensitivityMaker
+   :show-inheritance:
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+
+      ~SensitivityMaker.add_sensitivity_to_irf
+      ~SensitivityMaker.estimate_sensitivity
+      ~SensitivityMaker.load_irf
+
+   .. rubric:: Methods Documentation
+
+   .. automethod:: add_sensitivity_to_irf
+   .. automethod:: estimate_sensitivity
+   .. automethod:: load_irf

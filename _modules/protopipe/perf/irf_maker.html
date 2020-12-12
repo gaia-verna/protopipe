@@ -1,0 +1,803 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>protopipe.perf.irf_maker &mdash; protopipe 0.3.0-dev0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> protopipe
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.3.0-dev0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/index.html">Workflow and usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/index.html">How to contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../AUTHORS.html">Authors</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Structure</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pipeline/index.html">pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mva/index.html">mva</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../perf/index.html">perf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scripts/index.html">scripts</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">protopipe</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>protopipe.perf.irf_maker</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for protopipe.perf.irf_maker</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">astropy.units</span> <span class="k">as</span> <span class="nn">u</span>
+<span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Column</span>
+<span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">fits</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">gammapy.utils.nddata</span> <span class="kn">import</span> <span class="n">NDDataArray</span><span class="p">,</span> <span class="n">BinnedDataAxis</span>
+<span class="kn">from</span> <span class="nn">gammapy.utils.energy</span> <span class="kn">import</span> <span class="n">EnergyBounds</span>
+<span class="kn">from</span> <span class="nn">gammapy.irf</span> <span class="kn">import</span> <span class="n">EffectiveAreaTable</span><span class="p">,</span> <span class="n">EnergyDispersion2D</span>
+<span class="kn">from</span> <span class="nn">gammapy.spectrum</span> <span class="kn">import</span> <span class="n">SensitivityEstimator</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;IrfMaker&quot;</span><span class="p">,</span> <span class="s2">&quot;SensitivityMaker&quot;</span><span class="p">,</span> <span class="s2">&quot;BkgData&quot;</span><span class="p">,</span> <span class="s2">&quot;Irf&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="BkgData"><a class="viewcode-back" href="../../../api/protopipe.perf.BkgData.html#protopipe.perf.BkgData">[docs]</a><span class="k">class</span> <span class="nc">BkgData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class storing background data in a NDDataArray object.</span>
+<span class="sd">    It&#39;s a bit hacky, but gammapy sensitivity estimator does not take individual IRF,</span>
+<span class="sd">    it takes a CTAPerf object. So i&#39;m emulating that... We need a bkg format!!!</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get energy.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Irf"><a class="viewcode-back" href="../../../api/protopipe.perf.Irf.html#protopipe.perf.Irf">[docs]</a><span class="k">class</span> <span class="nc">Irf</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class storing IRF for sensitivity computation (emulating CTAPerf)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bkg</span><span class="p">,</span> <span class="n">aeff</span><span class="p">,</span> <span class="n">rmf</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bkg</span> <span class="o">=</span> <span class="n">bkg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aeff</span> <span class="o">=</span> <span class="n">aeff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rmf</span> <span class="o">=</span> <span class="n">rmf</span></div>
+
+
+<div class="viewcode-block" id="SensitivityMaker"><a class="viewcode-back" href="../../../api/protopipe.perf.SensitivityMaker.html#protopipe.perf.SensitivityMaker">[docs]</a><span class="k">class</span> <span class="nc">SensitivityMaker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class which estimate sensitivity with IRF</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config: `dict`</span>
+<span class="sd">        Configuration file</span>
+<span class="sd">    outdir: `str`</span>
+<span class="sd">        Output directory where analysis results is saved</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">outdir</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">=</span> <span class="n">outdir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">irf</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="SensitivityMaker.load_irf"><a class="viewcode-back" href="../../../api/protopipe.perf.SensitivityMaker.html#protopipe.perf.SensitivityMaker.load_irf">[docs]</a>    <span class="k">def</span> <span class="nf">load_irf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="p">,</span> <span class="s2">&quot;irf.fits.gz&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">memmap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdulist</span><span class="p">:</span>
+            <span class="n">aeff</span> <span class="o">=</span> <span class="n">EffectiveAreaTable</span><span class="o">.</span><span class="n">from_hdulist</span><span class="p">(</span><span class="n">hdulist</span><span class="o">=</span><span class="n">hdulist</span><span class="p">)</span>
+            <span class="n">edisp</span> <span class="o">=</span> <span class="n">EnergyDispersion2D</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">hdu</span><span class="o">=</span><span class="s2">&quot;ENERGY DISPERSION&quot;</span><span class="p">)</span>
+
+            <span class="n">bkg_fits_table</span> <span class="o">=</span> <span class="n">hdulist</span><span class="p">[</span><span class="s2">&quot;BACKGROUND&quot;</span><span class="p">]</span>
+            <span class="n">bkg_table</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">bkg_fits_table</span><span class="p">)</span>
+            <span class="n">energy_lo</span> <span class="o">=</span> <span class="n">bkg_table</span><span class="p">[</span><span class="s2">&quot;ENERG_LO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">quantity</span>
+            <span class="n">energy_hi</span> <span class="o">=</span> <span class="n">bkg_table</span><span class="p">[</span><span class="s2">&quot;ENERG_HI&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">quantity</span>
+            <span class="n">bkg</span> <span class="o">=</span> <span class="n">bkg_table</span><span class="p">[</span><span class="s2">&quot;BGD&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">quantity</span>
+
+            <span class="n">axes</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">BinnedDataAxis</span><span class="p">(</span>
+                    <span class="n">energy_lo</span><span class="p">,</span> <span class="n">energy_hi</span><span class="p">,</span> <span class="n">interpolation_mode</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;energy&quot;</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">bkg</span> <span class="o">=</span> <span class="n">BkgData</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">NDDataArray</span><span class="p">(</span><span class="n">axes</span><span class="o">=</span><span class="n">axes</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">bkg</span><span class="p">))</span>
+
+        <span class="c1"># Create rmf with appropriate dimensions (e_reco-&gt;bkg, e_true-&gt;area)</span>
+        <span class="n">e_reco_min</span> <span class="o">=</span> <span class="n">bkg</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">lo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">e_reco_max</span> <span class="o">=</span> <span class="n">bkg</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">hi</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">e_reco_bin</span> <span class="o">=</span> <span class="n">bkg</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">nbins</span>
+        <span class="n">e_reco_axis</span> <span class="o">=</span> <span class="n">EnergyBounds</span><span class="o">.</span><span class="n">equal_log_spacing</span><span class="p">(</span>
+            <span class="n">e_reco_min</span><span class="p">,</span> <span class="n">e_reco_max</span><span class="p">,</span> <span class="n">e_reco_bin</span><span class="p">,</span> <span class="s2">&quot;TeV&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">e_true_min</span> <span class="o">=</span> <span class="n">aeff</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">lo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">e_true_max</span> <span class="o">=</span> <span class="n">aeff</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">hi</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">e_true_bin</span> <span class="o">=</span> <span class="n">aeff</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">nbins</span>
+        <span class="n">e_true_axis</span> <span class="o">=</span> <span class="n">EnergyBounds</span><span class="o">.</span><span class="n">equal_log_spacing</span><span class="p">(</span>
+            <span class="n">e_true_min</span><span class="p">,</span> <span class="n">e_true_max</span><span class="p">,</span> <span class="n">e_true_bin</span><span class="p">,</span> <span class="s2">&quot;TeV&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Fake offset...</span>
+        <span class="n">rmf</span> <span class="o">=</span> <span class="n">edisp</span><span class="o">.</span><span class="n">to_energy_dispersion</span><span class="p">(</span>
+            <span class="n">offset</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">e_reco</span><span class="o">=</span><span class="n">e_reco_axis</span><span class="p">,</span> <span class="n">e_true</span><span class="o">=</span><span class="n">e_true_axis</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">irf</span> <span class="o">=</span> <span class="n">Irf</span><span class="p">(</span><span class="n">bkg</span><span class="o">=</span><span class="n">bkg</span><span class="p">,</span> <span class="n">aeff</span><span class="o">=</span><span class="n">aeff</span><span class="p">,</span> <span class="n">rmf</span><span class="o">=</span><span class="n">rmf</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SensitivityMaker.estimate_sensitivity"><a class="viewcode-back" href="../../../api/protopipe.perf.SensitivityMaker.html#protopipe.perf.SensitivityMaker.estimate_sensitivity">[docs]</a>    <span class="k">def</span> <span class="nf">estimate_sensitivity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">obs_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">][</span><span class="s2">&quot;obs_time&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">][</span><span class="s2">&quot;obs_time&quot;</span><span class="p">][</span><span class="s2">&quot;unit&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">sensitivity_estimator</span> <span class="o">=</span> <span class="n">SensitivityEstimator</span><span class="p">(</span><span class="n">irf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">irf</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="n">obs_time</span><span class="p">)</span>
+        <span class="n">sensitivity_estimator</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sens</span> <span class="o">=</span> <span class="n">sensitivity_estimator</span><span class="o">.</span><span class="n">results_table</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_sensitivity_to_irf</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SensitivityMaker.add_sensitivity_to_irf"><a class="viewcode-back" href="../../../api/protopipe.perf.SensitivityMaker.html#protopipe.perf.SensitivityMaker.add_sensitivity_to_irf">[docs]</a>    <span class="k">def</span> <span class="nf">add_sensitivity_to_irf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cfg_binning</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">][</span><span class="s2">&quot;ereco_binning&quot;</span><span class="p">]</span>
+        <span class="n">ereco</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">cfg_binning</span><span class="p">[</span><span class="s2">&quot;emin&quot;</span><span class="p">]),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">cfg_binning</span><span class="p">[</span><span class="s2">&quot;emax&quot;</span><span class="p">]),</span>
+            <span class="n">cfg_binning</span><span class="p">[</span><span class="s2">&quot;nbin&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+        <span class="n">t</span><span class="p">[</span><span class="s2">&quot;ENERG_LO&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">irf</span><span class="o">.</span><span class="n">bkg</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">lo</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;TeV&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;energy min&quot;</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s2">&quot;ENERG_HI&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">irf</span><span class="o">.</span><span class="n">bkg</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">hi</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;TeV&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;energy max&quot;</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s2">&quot;SENSITIVITY&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sens</span><span class="p">[</span><span class="s2">&quot;e2dnde&quot;</span><span class="p">],</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;erg/(cm2 s)&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;sensitivity&quot;</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s2">&quot;EXCESS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sens</span><span class="p">[</span><span class="s2">&quot;excess&quot;</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;excess&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span>
+        <span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s2">&quot;BKG&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sens</span><span class="p">[</span><span class="s2">&quot;background&quot;</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;bkg&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="p">,</span> <span class="s2">&quot;irf.fits.gz&quot;</span><span class="p">)</span>
+        <span class="n">hdulist</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">memmap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;update&quot;</span><span class="p">)</span>
+        <span class="n">col_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">format</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">unit</span><span class="p">),</span> <span class="n">array</span><span class="o">=</span><span class="n">col</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="p">]</span>
+        <span class="n">sens_hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">BinTableHDU</span><span class="o">.</span><span class="n">from_columns</span><span class="p">(</span><span class="n">col_list</span><span class="p">)</span>
+        <span class="n">sens_hdu</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;EXTNAME&quot;</span><span class="p">,</span> <span class="s2">&quot;SENSITIVITY&quot;</span><span class="p">)</span>
+        <span class="n">hdulist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sens_hdu</span><span class="p">)</span>
+        <span class="n">hdulist</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="IrfMaker"><a class="viewcode-back" href="../../../api/protopipe.perf.IrfMaker.html#protopipe.perf.IrfMaker">[docs]</a><span class="k">class</span> <span class="nc">IrfMaker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class building IRF for point-like analysis.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config: `dict`</span>
+<span class="sd">        Configuration file</span>
+<span class="sd">    outdir: `str`</span>
+<span class="sd">        Output directory where analysis results is saved</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">evt_dict</span><span class="p">,</span> <span class="n">outdir</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">=</span> <span class="n">outdir</span>
+
+        <span class="c1"># Read data saved on disk</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evt_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">,</span> <span class="s2">&quot;electron&quot;</span><span class="p">,</span> <span class="s2">&quot;proton&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">evt_dict</span><span class="p">[</span><span class="n">particle</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_processed.h5&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">particle</span><span class="p">))</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Read table with cuts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">outdir</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">.fits&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;general&quot;</span><span class="p">][</span><span class="s2">&quot;output_table_name&quot;</span><span class="p">])</span>
+            <span class="p">),</span>
+            <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;fits&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">&quot;keep&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span>
+
+        <span class="c1"># Binning</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ereco</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">&quot;emin&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">&quot;emax&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="n">cfg_binning</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">][</span><span class="s2">&quot;etrue_binning&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">etrue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">cfg_binning</span><span class="p">[</span><span class="s2">&quot;emin&quot;</span><span class="p">]),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">cfg_binning</span><span class="p">[</span><span class="s2">&quot;emax&quot;</span><span class="p">]),</span>
+            <span class="n">cfg_binning</span><span class="p">[</span><span class="s2">&quot;nbin&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="IrfMaker.build_irf"><a class="viewcode-back" href="../../../api/protopipe.perf.IrfMaker.html#protopipe.perf.IrfMaker.build_irf">[docs]</a>    <span class="k">def</span> <span class="nf">build_irf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">bkg_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_bkg_rate</span><span class="p">()</span>
+        <span class="n">psf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_point_spread_function</span><span class="p">()</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_effective_area</span><span class="p">(</span>
+            <span class="n">apply_score_cut</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">apply_angular_cut</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">hdu_name</span><span class="o">=</span><span class="s2">&quot;SPECRESP&quot;</span>
+        <span class="p">)</span>  <span class="c1"># Effective area with cuts applied</span>
+        <span class="n">edisp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_energy_dispersion</span><span class="p">()</span>
+
+        <span class="c1"># Add usefull effective areas for debugging</span>
+        <span class="n">area_no_cuts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_effective_area</span><span class="p">(</span>
+            <span class="n">apply_score_cut</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">apply_angular_cut</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">hdu_name</span><span class="o">=</span><span class="s2">&quot;SPECRESP (NO CUTS)&quot;</span><span class="p">,</span>
+        <span class="p">)</span>  <span class="c1"># Effective area with cuts applied</span>
+        <span class="n">area_no_score_cut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_effective_area</span><span class="p">(</span>
+            <span class="n">apply_score_cut</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">apply_angular_cut</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">hdu_name</span><span class="o">=</span><span class="s2">&quot;SPECRESP (WITH ANGULAR CUT)&quot;</span><span class="p">,</span>
+        <span class="p">)</span>  <span class="c1"># Effective area with cuts applied</span>
+        <span class="n">area_no_angular_cut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_effective_area</span><span class="p">(</span>
+            <span class="n">apply_score_cut</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">apply_angular_cut</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">hdu_name</span><span class="o">=</span><span class="s2">&quot;SPECRESP (WITH SCORE CUT)&quot;</span><span class="p">,</span>
+        <span class="p">)</span>  <span class="c1"># Effective area with cuts applied</span>
+
+        <span class="c1"># Primary header</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="n">primary_hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">PrimaryHDU</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+        <span class="c1"># Fill HDU list</span>
+        <span class="n">hdulist</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">HDUList</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">primary_hdu</span><span class="p">,</span>
+                <span class="n">area</span><span class="p">,</span>
+                <span class="n">psf</span><span class="p">,</span>
+                <span class="n">edisp</span><span class="p">,</span>
+                <span class="n">bkg_rate</span><span class="p">,</span>
+                <span class="n">area_no_cuts</span><span class="p">,</span>
+                <span class="n">area_no_score_cut</span><span class="p">,</span>
+                <span class="n">area_no_angular_cut</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">hdulist</span><span class="o">.</span><span class="n">writeto</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="p">,</span> <span class="s2">&quot;irf.fits.gz&quot;</span><span class="p">),</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IrfMaker.make_bkg_rate"><a class="viewcode-back" href="../../../api/protopipe.perf.IrfMaker.html#protopipe.perf.IrfMaker.make_bkg_rate">[docs]</a>    <span class="k">def</span> <span class="nf">make_bkg_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build background rate&quot;&quot;&quot;</span>
+        <span class="n">nbin</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
+        <span class="n">energ_lo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbin</span><span class="p">)</span>
+        <span class="n">energ_hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbin</span><span class="p">)</span>
+        <span class="n">bgd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbin</span><span class="p">)</span>
+
+        <span class="n">obs_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">][</span><span class="s2">&quot;obs_time&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">][</span><span class="s2">&quot;obs_time&quot;</span><span class="p">][</span><span class="s2">&quot;unit&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ibin</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">):</span>
+
+            <span class="n">energ_lo</span><span class="p">[</span><span class="n">ibin</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;emin&quot;</span><span class="p">]</span>
+            <span class="n">energ_hi</span><span class="p">[</span><span class="n">ibin</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;emax&quot;</span><span class="p">]</span>
+
+            <span class="c1"># References</span>
+            <span class="n">data_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evt_dict</span><span class="p">[</span><span class="s2">&quot;proton&quot;</span><span class="p">]</span>
+            <span class="n">data_e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evt_dict</span><span class="p">[</span><span class="s2">&quot;electron&quot;</span><span class="p">]</span>
+
+            <span class="c1"># Compute number of events passing cuts selection</span>
+            <span class="n">n_p</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                <span class="n">data_p</span><span class="p">[</span>
+                    <span class="p">(</span><span class="n">data_p</span><span class="p">[</span><span class="s2">&quot;reco_energy&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;emin&quot;</span><span class="p">])</span>
+                    <span class="o">&amp;</span> <span class="p">(</span><span class="n">data_p</span><span class="p">[</span><span class="s2">&quot;reco_energy&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;emax&quot;</span><span class="p">])</span>
+                    <span class="o">&amp;</span> <span class="p">(</span><span class="n">data_p</span><span class="p">[</span><span class="s2">&quot;pass_best_cutoff&quot;</span><span class="p">])</span>
+                <span class="p">][</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="n">n_e</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                <span class="n">data_e</span><span class="p">[</span>
+                    <span class="p">(</span><span class="n">data_e</span><span class="p">[</span><span class="s2">&quot;reco_energy&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;emin&quot;</span><span class="p">])</span>
+                    <span class="o">&amp;</span> <span class="p">(</span><span class="n">data_e</span><span class="p">[</span><span class="s2">&quot;reco_energy&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;emax&quot;</span><span class="p">])</span>
+                    <span class="o">&amp;</span> <span class="p">(</span><span class="n">data_e</span><span class="p">[</span><span class="s2">&quot;pass_best_cutoff&quot;</span><span class="p">])</span>
+                <span class="p">][</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Correct number of background due to acceptance</span>
+            <span class="n">acceptance_g</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;angular_cut&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;rad&quot;</span><span class="p">)))</span>
+            <span class="p">)</span>
+            <span class="n">acceptance_p</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="mi">2</span>
+                <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+                <span class="o">*</span> <span class="p">(</span>
+                    <span class="mi">1</span>
+                    <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">][</span><span class="s2">&quot;max_bg_radius&quot;</span><span class="p">]</span>
+                        <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;rad&quot;</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">acceptance_e</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="mi">2</span>
+                <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+                <span class="o">*</span> <span class="p">(</span>
+                    <span class="mi">1</span>
+                    <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">][</span><span class="s2">&quot;max_bg_radius&quot;</span><span class="p">]</span>
+                        <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;rad&quot;</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="n">n_p</span> <span class="o">*=</span> <span class="n">acceptance_g</span> <span class="o">/</span> <span class="n">acceptance_p</span>
+            <span class="n">n_e</span> <span class="o">*=</span> <span class="n">acceptance_g</span> <span class="o">/</span> <span class="n">acceptance_e</span>
+            <span class="n">bgd</span><span class="p">[</span><span class="n">ibin</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_p</span> <span class="o">+</span> <span class="n">n_e</span><span class="p">)</span> <span class="o">/</span> <span class="n">obs_time</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+        <span class="n">t</span><span class="p">[</span><span class="s2">&quot;ENERG_LO&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="n">energ_lo</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;TeV&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;energy min&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span>
+        <span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s2">&quot;ENERG_HI&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="n">energ_hi</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;TeV&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;energy max&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span>
+        <span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s2">&quot;BGD&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">bgd</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;TeV&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Background&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">IrfMaker</span><span class="o">.</span><span class="n">_make_hdu</span><span class="p">(</span><span class="s2">&quot;BACKGROUND&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;ENERG_LO&quot;</span><span class="p">,</span> <span class="s2">&quot;ENERG_HI&quot;</span><span class="p">,</span> <span class="s2">&quot;BGD&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="IrfMaker.make_point_spread_function"><a class="viewcode-back" href="../../../api/protopipe.perf.IrfMaker.html#protopipe.perf.IrfMaker.make_point_spread_function">[docs]</a>    <span class="k">def</span> <span class="nf">make_point_spread_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">68</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Buil point spread function with radius containment `radius`&quot;&quot;&quot;</span>
+        <span class="n">nbin</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
+        <span class="n">energ_lo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbin</span><span class="p">)</span>
+        <span class="n">energ_hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbin</span><span class="p">)</span>
+        <span class="n">psf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbin</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ibin</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">):</span>
+
+            <span class="n">energ_lo</span><span class="p">[</span><span class="n">ibin</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;emin&quot;</span><span class="p">]</span>
+            <span class="n">energ_hi</span><span class="p">[</span><span class="n">ibin</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;emax&quot;</span><span class="p">]</span>
+
+            <span class="c1"># References</span>
+            <span class="n">data_g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evt_dict</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">]</span>
+
+            <span class="c1"># Select data passing cuts selection</span>
+            <span class="n">sel</span> <span class="o">=</span> <span class="n">data_g</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="p">(</span><span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;reco_energy&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;emin&quot;</span><span class="p">])</span>
+                <span class="o">&amp;</span> <span class="p">(</span><span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;reco_energy&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;emax&quot;</span><span class="p">])</span>
+                <span class="o">&amp;</span> <span class="p">(</span><span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;pass_best_cutoff&quot;</span><span class="p">]),</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;column_definition&quot;</span><span class="p">][</span><span class="s2">&quot;angular_distance_to_the_src&quot;</span><span class="p">]],</span>
+            <span class="p">]</span>
+
+            <span class="c1"># Compute PSF</span>
+            <span class="n">psf</span><span class="p">[</span><span class="n">ibin</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span>
+                <span class="n">sel</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;column_definition&quot;</span><span class="p">][</span><span class="s2">&quot;angular_distance_to_the_src&quot;</span><span class="p">]],</span>
+                <span class="n">radius</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+        <span class="n">t</span><span class="p">[</span><span class="s2">&quot;ENERG_LO&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="n">energ_lo</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;TeV&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;energy min&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span>
+        <span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s2">&quot;ENERG_HI&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="n">energ_hi</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;TeV&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;energy max&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span>
+        <span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s2">&quot;PSF68&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">psf</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;TeV&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;PSF&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">IrfMaker</span><span class="o">.</span><span class="n">_make_hdu</span><span class="p">(</span>
+            <span class="s2">&quot;POINT SPREAD FUNCTION&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;ENERG_LO&quot;</span><span class="p">,</span> <span class="s2">&quot;ENERG_HI&quot;</span><span class="p">,</span> <span class="s2">&quot;PSF68&quot;</span><span class="p">]</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="IrfMaker.make_effective_area"><a class="viewcode-back" href="../../../api/protopipe.perf.IrfMaker.html#protopipe.perf.IrfMaker.make_effective_area">[docs]</a>    <span class="k">def</span> <span class="nf">make_effective_area</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">apply_score_cut</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">apply_angular_cut</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">hdu_name</span><span class="o">=</span><span class="s2">&quot;SPECRESP&quot;</span>
+    <span class="p">):</span>
+        <span class="n">nbin</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">etrue</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">energ_lo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbin</span><span class="p">)</span>
+        <span class="n">energ_hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbin</span><span class="p">)</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbin</span><span class="p">)</span>
+
+        <span class="c1"># Get simulation infos</span>
+        <span class="n">cfg_particule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;particle_information&quot;</span><span class="p">][</span><span class="s2">&quot;gamma&quot;</span><span class="p">]</span>
+        <span class="n">simu_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">cfg_particule</span><span class="p">[</span><span class="s2">&quot;gen_gamma&quot;</span><span class="p">])</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">simu_index</span>  <span class="c1"># for futur integration</span>
+        <span class="n">nsimu_tot</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">cfg_particule</span><span class="p">[</span><span class="s2">&quot;n_files&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span>
+            <span class="n">cfg_particule</span><span class="p">[</span><span class="s2">&quot;num_showers&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span>
+            <span class="n">cfg_particule</span><span class="p">[</span><span class="s2">&quot;num_use&quot;</span><span class="p">])</span>
+        <span class="n">emin_simu</span> <span class="o">=</span> <span class="n">cfg_particule</span><span class="p">[</span><span class="s2">&quot;e_min&quot;</span><span class="p">]</span>
+        <span class="n">emax_simu</span> <span class="o">=</span> <span class="n">cfg_particule</span><span class="p">[</span><span class="s2">&quot;e_max&quot;</span><span class="p">]</span>
+        <span class="n">area_simu</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">cfg_particule</span><span class="p">[</span><span class="s2">&quot;gen_radius&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s2">&quot;m2&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ibin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbin</span><span class="p">):</span>
+
+            <span class="n">emin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">etrue</span><span class="p">[</span><span class="n">ibin</span><span class="p">]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">TeV</span>
+            <span class="n">emax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">etrue</span><span class="p">[</span><span class="n">ibin</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">TeV</span>
+
+            <span class="c1"># References</span>
+            <span class="n">data_g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evt_dict</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">]</span>
+
+            <span class="c1"># Conditions to select gamma-rays</span>
+            <span class="n">condition</span> <span class="o">=</span> <span class="p">(</span><span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;mc_energy&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">emin</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;mc_energy&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">emax</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">apply_score_cut</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">condition</span> <span class="o">&amp;=</span> <span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;pass_best_cutoff&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">apply_angular_cut</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">condition</span> <span class="o">&amp;=</span> <span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;pass_angular_cut&quot;</span><span class="p">]</span>
+
+            <span class="c1"># Compute number of events passing cuts selection</span>
+            <span class="n">sel</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_g</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">condition</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;weight&quot;</span><span class="p">]])</span>
+
+            <span class="c1"># Compute number of number of events in simulation</span>
+            <span class="n">simu_evts</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">nsimu_tot</span><span class="p">)</span>
+                <span class="o">*</span> <span class="p">(</span><span class="n">emax</span><span class="o">.</span><span class="n">value</span> <span class="o">**</span> <span class="n">index</span> <span class="o">-</span> <span class="n">emin</span><span class="o">.</span><span class="n">value</span> <span class="o">**</span> <span class="n">index</span><span class="p">)</span>
+                <span class="o">/</span> <span class="p">(</span><span class="n">emax_simu</span> <span class="o">**</span> <span class="n">index</span> <span class="o">-</span> <span class="n">emin_simu</span> <span class="o">**</span> <span class="n">index</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="n">area</span><span class="p">[</span><span class="n">ibin</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">sel</span> <span class="o">/</span> <span class="n">simu_evts</span><span class="p">)</span> <span class="o">*</span> <span class="n">area_simu</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">energ_lo</span><span class="p">[</span><span class="n">ibin</span><span class="p">]</span> <span class="o">=</span> <span class="n">emin</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">energ_hi</span><span class="p">[</span><span class="n">ibin</span><span class="p">]</span> <span class="o">=</span> <span class="n">emax</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+        <span class="n">t</span><span class="p">[</span><span class="s2">&quot;ENERG_LO&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="n">energ_lo</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;TeV&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;energy min&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span>
+        <span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s2">&quot;ENERG_HI&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="n">energ_hi</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;TeV&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;energy max&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span>
+        <span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="n">hdu_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;m2&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Effective area&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;E&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">IrfMaker</span><span class="o">.</span><span class="n">_make_hdu</span><span class="p">(</span><span class="n">hdu_name</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;ENERG_LO&quot;</span><span class="p">,</span> <span class="s2">&quot;ENERG_HI&quot;</span><span class="p">,</span> <span class="n">hdu_name</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="IrfMaker.make_energy_dispersion"><a class="viewcode-back" href="../../../api/protopipe.perf.IrfMaker.html#protopipe.perf.IrfMaker.make_energy_dispersion">[docs]</a>    <span class="k">def</span> <span class="nf">make_energy_dispersion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">migra</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mi">300</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">etrue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">0.01</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">10000</span><span class="p">),</span> <span class="mi">60</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">migra</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">etrue</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Select events</span>
+        <span class="n">data_g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evt_dict</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">]</span>
+        <span class="n">data_g</span> <span class="o">=</span> <span class="n">data_g</span><span class="p">[</span>
+            <span class="p">(</span><span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;pass_best_cutoff&quot;</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;pass_angular_cut&quot;</span><span class="p">])</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">imigra</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">migra</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">migra_min</span> <span class="o">=</span> <span class="n">migra</span><span class="p">[</span><span class="n">imigra</span><span class="p">]</span>
+            <span class="n">migra_max</span> <span class="o">=</span> <span class="n">migra</span><span class="p">[</span><span class="n">imigra</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">ietrue</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">etrue</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">emin</span> <span class="o">=</span> <span class="n">etrue</span><span class="p">[</span><span class="n">ietrue</span><span class="p">]</span>
+                <span class="n">emax</span> <span class="o">=</span> <span class="n">etrue</span><span class="p">[</span><span class="n">ietrue</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+                <span class="n">sel</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span>
+                    <span class="n">data_g</span><span class="p">[</span>
+                        <span class="p">(</span><span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;mc_energy&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">emin</span><span class="p">)</span>
+                        <span class="o">&amp;</span> <span class="p">(</span><span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;mc_energy&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">emax</span><span class="p">)</span>
+                        <span class="o">&amp;</span> <span class="p">((</span><span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;reco_energy&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;mc_energy&quot;</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">migra_min</span><span class="p">)</span>
+                        <span class="o">&amp;</span> <span class="p">((</span><span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;reco_energy&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">data_g</span><span class="p">[</span><span class="s2">&quot;mc_energy&quot;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">migra_max</span><span class="p">)</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">counts</span><span class="p">[</span><span class="n">imigra</span><span class="p">][</span><span class="n">ietrue</span><span class="p">]</span> <span class="o">=</span> <span class="n">sel</span>
+
+        <span class="n">table_energy</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+        <span class="n">table_energy</span><span class="p">[</span><span class="s2">&quot;ETRUE_LO&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="n">etrue</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;TeV&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;energy min&quot;</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">etrue</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">table_energy</span><span class="p">[</span><span class="s2">&quot;ETRUE_HI&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="n">etrue</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;TeV&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;energy max&quot;</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">etrue</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">table_migra</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+        <span class="n">table_migra</span><span class="p">[</span><span class="s2">&quot;MIGRA_LO&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="n">migra</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;migra min&quot;</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">migra</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">table_migra</span><span class="p">[</span><span class="s2">&quot;MIGRA_HI&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="n">migra</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;migra max&quot;</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">migra</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Needed for format, a bit hacky...</span>
+        <span class="n">theta_lo</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+        <span class="n">theta_hi</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]</span>
+        <span class="n">table_theta</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+        <span class="n">table_theta</span><span class="p">[</span><span class="s2">&quot;THETA_LO&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="n">theta_lo</span><span class="p">,</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;deg&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;theta min&quot;</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta_lo</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">table_theta</span><span class="p">[</span><span class="s2">&quot;THETA_HI&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+            <span class="n">theta_hi</span><span class="p">,</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;deg&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;theta max&quot;</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta_hi</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">extended_mig_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span>
+            <span class="n">counts</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta_lo</span><span class="p">),</span> <span class="n">counts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">counts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="n">dim_matrix</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">table_energy</span><span class="p">[</span><span class="s2">&quot;ETRUE_LO&quot;</span><span class="p">])</span>
+            <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">table_migra</span><span class="p">[</span><span class="s2">&quot;MIGRA_LO&quot;</span><span class="p">])</span>
+            <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">table_theta</span><span class="p">[</span><span class="s2">&quot;THETA_LO&quot;</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="n">matrix</span> <span class="o">=</span> <span class="n">Table</span><span class="p">([</span><span class="n">extended_mig_matrix</span><span class="o">.</span><span class="n">ravel</span><span class="p">()],</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;MATRIX&quot;</span><span class="p">])</span>
+        <span class="n">matrix</span><span class="p">[</span><span class="s2">&quot;MATRIX&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">matrix</span><span class="p">[</span><span class="s2">&quot;MATRIX&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dim_matrix</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;E&quot;</span>
+        <span class="n">hdu</span> <span class="o">=</span> <span class="n">IrfMaker</span><span class="o">.</span><span class="n">_make_edisp_hdu</span><span class="p">(</span><span class="n">table_energy</span><span class="p">,</span> <span class="n">table_migra</span><span class="p">,</span> <span class="n">table_theta</span><span class="p">,</span> <span class="n">matrix</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">hdu</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_make_hdu</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">hdu_name</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">cols</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of columns&quot;&quot;&quot;</span>
+        <span class="n">col_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">format</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">unit</span><span class="p">),</span> <span class="n">array</span><span class="o">=</span><span class="n">col</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="p">]</span>
+        <span class="n">hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">BinTableHDU</span><span class="o">.</span><span class="n">from_columns</span><span class="p">(</span><span class="n">col_list</span><span class="p">)</span>
+        <span class="n">hdu</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;EXTNAME&quot;</span><span class="p">,</span> <span class="n">hdu_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">hdu</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_make_edisp_hdu</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">table_energy</span><span class="p">,</span> <span class="n">table_migra</span><span class="p">,</span> <span class="n">table_theta</span><span class="p">,</span> <span class="n">matrix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of columns&quot;&quot;&quot;</span>
+        <span class="n">hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">BinTableHDU</span><span class="o">.</span><span class="n">from_columns</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ETRUE_LO&quot;</span><span class="p">,</span>
+                    <span class="nb">format</span><span class="o">=</span><span class="n">table_energy</span><span class="p">[</span><span class="s2">&quot;ETRUE_LO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="n">table_energy</span><span class="p">[</span><span class="s2">&quot;ETRUE_LO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span>
+                    <span class="n">array</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">table_energy</span><span class="p">[</span><span class="s2">&quot;ETRUE_LO&quot;</span><span class="p">]),</span>
+                <span class="p">),</span>
+                <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+                    <span class="s2">&quot;ETRUE_HI&quot;</span><span class="p">,</span>
+                    <span class="n">table_energy</span><span class="p">[</span><span class="s2">&quot;ETRUE_HI&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="n">table_energy</span><span class="p">[</span><span class="s2">&quot;ETRUE_HI&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span>
+                    <span class="n">array</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">table_energy</span><span class="p">[</span><span class="s2">&quot;ETRUE_HI&quot;</span><span class="p">]),</span>
+                <span class="p">),</span>
+                <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+                    <span class="s2">&quot;MIGRA_LO&quot;</span><span class="p">,</span>
+                    <span class="n">table_migra</span><span class="p">[</span><span class="s2">&quot;MIGRA_LO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="n">table_migra</span><span class="p">[</span><span class="s2">&quot;MIGRA_LO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span>
+                    <span class="n">array</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">table_migra</span><span class="p">[</span><span class="s2">&quot;MIGRA_LO&quot;</span><span class="p">]),</span>
+                <span class="p">),</span>
+                <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+                    <span class="s2">&quot;MIGRA_HI&quot;</span><span class="p">,</span>
+                    <span class="n">table_migra</span><span class="p">[</span><span class="s2">&quot;MIGRA_HI&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="n">table_migra</span><span class="p">[</span><span class="s2">&quot;MIGRA_HI&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span>
+                    <span class="n">array</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">table_migra</span><span class="p">[</span><span class="s2">&quot;MIGRA_HI&quot;</span><span class="p">]),</span>
+                <span class="p">),</span>
+                <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+                    <span class="s2">&quot;THETA_LO&quot;</span><span class="p">,</span>
+                    <span class="n">table_theta</span><span class="p">[</span><span class="s2">&quot;THETA_LO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="n">table_theta</span><span class="p">[</span><span class="s2">&quot;THETA_LO&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span>
+                    <span class="n">array</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">table_theta</span><span class="p">[</span><span class="s2">&quot;THETA_LO&quot;</span><span class="p">]),</span>
+                <span class="p">),</span>
+                <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+                    <span class="s2">&quot;THETA_HI&quot;</span><span class="p">,</span>
+                    <span class="n">table_theta</span><span class="p">[</span><span class="s2">&quot;THETA_HI&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="n">table_theta</span><span class="p">[</span><span class="s2">&quot;THETA_HI&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span>
+                    <span class="n">array</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">table_theta</span><span class="p">[</span><span class="s2">&quot;THETA_HI&quot;</span><span class="p">]),</span>
+                <span class="p">),</span>
+                <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+                    <span class="s2">&quot;MATRIX&quot;</span><span class="p">,</span>
+                    <span class="n">matrix</span><span class="p">[</span><span class="s2">&quot;MATRIX&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="n">matrix</span><span class="p">[</span><span class="s2">&quot;MATRIX&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span>
+                    <span class="n">array</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">matrix</span><span class="p">[</span><span class="s2">&quot;MATRIX&quot;</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">hdu</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+            <span class="s2">&quot;TDIM7&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;(&quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">table_energy</span><span class="p">[</span><span class="s2">&quot;ETRUE_LO&quot;</span><span class="p">]))</span>
+            <span class="o">+</span> <span class="s2">&quot;,&quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">table_migra</span><span class="p">[</span><span class="s2">&quot;MIGRA_LO&quot;</span><span class="p">]))</span>
+            <span class="o">+</span> <span class="s2">&quot;,&quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">table_theta</span><span class="p">[</span><span class="s2">&quot;THETA_LO&quot;</span><span class="p">]))</span>
+            <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">hdu</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+            <span class="s2">&quot;EXTNAME&quot;</span><span class="p">,</span> <span class="s2">&quot;ENERGY DISPERSION&quot;</span><span class="p">,</span> <span class="s2">&quot;name of this binary table extension &quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">hdu</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Michele Peresano
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

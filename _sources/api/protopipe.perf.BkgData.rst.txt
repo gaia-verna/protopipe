@@ -1,0 +1,17 @@
+BkgData
+=======
+
+.. currentmodule:: protopipe.perf
+
+.. autoclass:: BkgData
+   :show-inheritance:
+
+   .. rubric:: Attributes Summary
+
+   .. autosummary::
+
+      ~BkgData.energy
+
+   .. rubric:: Attributes Documentation
+
+   .. autoattribute:: energy

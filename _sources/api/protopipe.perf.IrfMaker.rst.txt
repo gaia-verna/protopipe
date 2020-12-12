@@ -1,0 +1,25 @@
+IrfMaker
+========
+
+.. currentmodule:: protopipe.perf
+
+.. autoclass:: IrfMaker
+   :show-inheritance:
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+
+      ~IrfMaker.build_irf
+      ~IrfMaker.make_bkg_rate
+      ~IrfMaker.make_effective_area
+      ~IrfMaker.make_energy_dispersion
+      ~IrfMaker.make_point_spread_function
+
+   .. rubric:: Methods Documentation
+
+   .. automethod:: build_irf
+   .. automethod:: make_bkg_rate
+   .. automethod:: make_effective_area
+   .. automethod:: make_energy_dispersion
+   .. automethod:: make_point_spread_function

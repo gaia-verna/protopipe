@@ -1,0 +1,981 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>IRFs and sensitivity &mdash; protopipe 0.3.0-dev0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Authors" href="../../AUTHORS.html" />
+    <link rel="prev" title="Particle classification" href="benchmarks_DL2_particle-classification.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> protopipe
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.3.0-dev0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Overview</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/index.html">Workflow and usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">How to contribute</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../gitrepo.html">The repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../instructions.html">Instructions</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../beforepushing.html">Code and performance checks</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../beforepushing.html#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beforepushing.html#tests-and-unit-tests">Tests and unit-tests</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../beforepushing.html#benchmarks">Benchmarks</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="benchmarks_DL1_calibration.html">Calibration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benchmarks_DL1_image-cleaning.html">Image cleaning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benchmarks_DL2_energy-estimation.html">Energy estimation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benchmarks_DL2_particle-classification.html">Particle classification</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">IRFs and sensitivity</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../AUTHORS.html">Authors</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Structure</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pipeline/index.html">pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mva/index.html">mva</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../perf/index.html">perf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scripts/index.html">scripts</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">protopipe</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">How to contribute</a> &raquo;</li>
+        
+          <li><a href="../beforepushing.html">Code and performance checks</a> &raquo;</li>
+        
+      <li>IRFs and sensitivity</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/contribute/benchmarks/benchmarks_DL3_IRFs_and_sensitivity.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="IRFs-and-sensitivity">
+<h1>IRFs and sensitivity<a class="headerlink" href="#IRFs-and-sensitivity" title="Permalink to this headline">¶</a></h1>
+<p><strong>WARNING</strong></p>
+<p>This is still a work-in-progress, it will evolve with the pipeline comparisons and converge with ctaplot+cta-benchmarks.</p>
+<p><strong>IMPORTANT</strong></p>
+<p>Soon this will be supersided by new results using <a class="reference external" href="https://github.com/cta-observatory/pyirfhttps://github.com/cta-observatory/pyirf">pyirf</a> and ctaplot metrics.</p>
+<p><strong>Author(s):</strong></p>
+<ul class="simple">
+<li><p>Dr. Michele Peresano (CEA-Saclay/IRFU/DAp/LEPCHE), 2020 based on previous work by J. Lefacheur.</p></li>
+</ul>
+<p><strong>Description:</strong></p>
+<p>This notebook contains DL3 and benchmarks for the <em>protopipe</em> pipeline.</p>
+<p>Note that: - a more general set of benchmarks is being defined in cta-benchmarks/ctaplot, - follow <a class="reference external" href="https://www.overleaf.com/16933164ghbhvjtchknf">this</a> document by adding new benchmarks or proposing new ones.</p>
+<p><strong>Requirements:</strong></p>
+<p>To run this notebook you will need a set of DL2 files produced on the grid with protopipe. The MC production to be used and the appropriate set of files to use for this notebook can be found <a class="reference external" href="https://forge.in2p3.fr/projects/step-by-step-reference-mars-analysis/wiki#The-MC-sample">here</a>.</p>
+<p>The data format required to run the notebook is the current one used by <em>protopipe</em> . Later on it will be the same as in <em>ctapipe</em> + <em>pyirf</em>.</p>
+<p><strong>Development and testing:</strong></p>
+<div class="line-block">
+<div class="line">For the moment this notebook is optimized to work only on files produced from LSTCam + NectarCam telescope configurations.</div>
+<div class="line">As with any other part of <em>protopipe</em> and being part of the official repository, this notebook can be further developed by any interested contributor.</div>
+<div class="line">The execution of this notebook is not currently automatic, it must be done locally by the user - preferably <em>before</em> pushing a pull-request.</div>
+<div class="line"><strong>IMPORTANT:</strong> Please, if you wish to contribute to this notebook, before pushing anything to your branch (better even before opening the PR) clear all the output and remove any local directory paths that you used for testing (leave empty strings).</div>
+</div>
+<div class="line-block">
+<div class="line"><strong>TODO:</strong></div>
+<div class="line">* update everything…</div>
+</div>
+<div class="section" id="Imports">
+<h2>Imports<a class="headerlink" href="#Imports" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">gridspec</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">astropy.units</span> <span class="k">as</span> <span class="nn">u</span>
+<span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">fits</span>
+<span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Column</span>
+
+<span class="kn">from</span> <span class="nn">gammapy.utils.energy</span> <span class="kn">import</span> <span class="n">EnergyBounds</span>
+<span class="kn">from</span> <span class="nn">gammapy.irf</span> <span class="kn">import</span> <span class="n">EffectiveAreaTable</span><span class="p">,</span> <span class="n">EnergyDispersion2D</span>
+
+<span class="kn">from</span> <span class="nn">gammapy.spectrum</span> <span class="kn">import</span> <span class="n">CrabSpectrum</span>
+<span class="kn">from</span> <span class="nn">gammapy.spectrum.models</span> <span class="kn">import</span> <span class="n">PowerLaw</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Functions">
+<h2>Functions<a class="headerlink" href="#Functions" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">get_performance</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load IRF, use Gammapy capabilities to handle the miragtion matrix&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">memmap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdulist</span><span class="p">:</span>
+        <span class="n">aeff</span> <span class="o">=</span> <span class="n">EffectiveAreaTable</span><span class="o">.</span><span class="n">from_hdulist</span><span class="p">(</span><span class="n">hdulist</span><span class="o">=</span><span class="n">hdulist</span><span class="p">)</span><span class="o">.</span><span class="n">to_table</span><span class="p">()</span>
+        <span class="n">bkg</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">hdulist</span><span class="p">[</span><span class="s2">&quot;BACKGROUND&quot;</span><span class="p">])</span>
+        <span class="n">psf</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">hdulist</span><span class="p">[</span><span class="s2">&quot;POINT SPREAD FUNCTION&quot;</span><span class="p">])</span>
+        <span class="n">sens</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">hdulist</span><span class="p">[</span><span class="s2">&quot;SENSITIVITY&quot;</span><span class="p">])</span>
+        <span class="n">edisp</span> <span class="o">=</span> <span class="n">EnergyDispersion2D</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">hdu</span><span class="o">=</span><span class="s2">&quot;ENERGY DISPERSION&quot;</span><span class="p">)</span>
+        <span class="n">rmf</span> <span class="o">=</span> <span class="n">edisp</span><span class="o">.</span><span class="n">to_energy_dispersion</span><span class="p">(</span><span class="n">offset</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span>  <span class="c1"># Projection of migration matrix, dummy angle...</span>
+
+        <span class="k">try</span><span class="p">:</span>  <span class="c1"># Collection area without score/angular cut</span>
+            <span class="n">aeff_no_cuts</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">hdulist</span><span class="p">[</span><span class="s2">&quot;SPECRESP (NO CUTS)&quot;</span><span class="p">])</span>
+            <span class="n">aeff_angular_cut</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">hdulist</span><span class="p">[</span><span class="s2">&quot;SPECRESP (WITH ANGULAR CUT)&quot;</span><span class="p">])</span>
+            <span class="n">aeff_score_cut</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">hdulist</span><span class="p">[</span><span class="s2">&quot;SPECRESP (WITH SCORE CUT)&quot;</span><span class="p">])</span>
+
+            <span class="n">aeff_no_cuts</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="s1">&#39;SPECRESP (NO CUTS)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;SPECRESP&#39;</span>
+            <span class="n">aeff_angular_cut</span><span class="p">[</span><span class="s2">&quot;SPECRESP (WITH ANGULAR CUT)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;SPECRESP&#39;</span>
+            <span class="n">aeff_score_cut</span><span class="p">[</span><span class="s2">&quot;SPECRESP (WITH SCORE CUT)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;SPECRESP&#39;</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="c1"># Collection area without score/angular cut, that will be used to contain the IRF</span>
+    <span class="n">perf</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">aeff</span><span class="o">=</span> <span class="n">aeff</span><span class="p">,</span> <span class="n">bkg</span><span class="o">=</span> <span class="n">bkg</span><span class="p">,</span> <span class="n">psf</span><span class="o">=</span> <span class="n">psf</span><span class="p">,</span> <span class="n">rmf</span><span class="o">=</span><span class="n">rmf</span><span class="p">,</span> <span class="n">sens</span><span class="o">=</span><span class="n">sens</span><span class="p">,</span> <span class="n">edisp</span><span class="o">=</span><span class="n">edisp</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">perf</span><span class="p">[</span><span class="s1">&#39;aeff_no_cuts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aeff_no_cuts</span>
+        <span class="n">perf</span><span class="p">[</span><span class="s1">&#39;aeff_angular_cut&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aeff_angular_cut</span>
+        <span class="n">perf</span><span class="p">[</span><span class="s1">&#39;aeff_score_cut&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aeff_score_cut</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="n">perf</span>
+
+<span class="k">def</span> <span class="nf">plot_irf</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">perf</span><span class="p">,</span> <span class="n">energy_range</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot IRFs, take a list of axes (len=4)&quot;&quot;&quot;</span>
+    <span class="n">plot_table</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">perf</span><span class="p">[</span><span class="s1">&#39;bkg&#39;</span><span class="p">],</span> <span class="s1">&#39;BGD&#39;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">energy_range</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">plot_table</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">perf</span><span class="p">[</span><span class="s1">&#39;aeff&#39;</span><span class="p">],</span> <span class="s1">&#39;SPECRESP&#39;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">energy_range</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">plot_table</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">perf</span><span class="p">[</span><span class="s1">&#39;psf&#39;</span><span class="p">],</span> <span class="s1">&#39;PSF68&#39;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">energy_range</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">plot_energy_response</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">perf</span><span class="p">[</span><span class="s1">&#39;rmf&#39;</span><span class="p">],</span> <span class="n">label</span><span class="p">,</span> <span class="n">energy_range</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Reco energy [TeV]&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Background rate [Hz]&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;True energy [TeV]&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Effective area [m2]&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+
+    <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Reco energy [TeV]&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Point spread function (68%) [deg]&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span> <span class="c1"># dft 0.5</span>
+
+    <span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;True energy [TeV]&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Energy dispersion [%]&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">])</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">plot_sensitivity_comparison</span><span class="p">(</span><span class="n">list_perf</span><span class="p">,</span> <span class="n">list_label</span><span class="p">,</span> <span class="n">list_color</span><span class="p">,</span> <span class="n">list_erange</span><span class="p">,</span> <span class="n">perf_ref</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Superpose a list of sensitivity and make a residual plot&quot;&quot;&quot;</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">gridspec</span><span class="o">.</span><span class="n">GridSpec</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+    <span class="c1">#ax_sens = plt.subplot(gs[:-1, :])</span>
+    <span class="n">ax_sens</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="c1">#ax_res = plt.subplot(gs[4, :])</span>
+    <span class="n">ax_res</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:,</span> <span class="p">:])</span>
+
+    <span class="n">sens_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">perf</span><span class="p">[</span><span class="n">config</span><span class="p">][</span><span class="s1">&#39;sens&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">perf</span> <span class="ow">in</span> <span class="n">list_perf</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">sensi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sens_list</span><span class="p">):</span>
+        <span class="n">plot_sensitivity</span><span class="p">(</span>
+            <span class="n">ax_sens</span><span class="p">,</span>
+            <span class="n">sensi</span><span class="p">,</span>
+            <span class="n">list_label</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+            <span class="n">list_erange</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+            <span class="o">**</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="n">list_color</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="s1">&#39;lw&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="n">emin</span> <span class="o">=</span> <span class="n">perf_ref</span><span class="p">[</span><span class="n">config</span><span class="p">][</span><span class="s1">&#39;sens&#39;</span><span class="p">][</span><span class="s1">&#39;ENERG_LO&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">emax</span> <span class="o">=</span> <span class="n">perf_ref</span><span class="p">[</span><span class="n">config</span><span class="p">][</span><span class="s1">&#39;sens&#39;</span><span class="p">][</span><span class="s1">&#39;ENERG_HI&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">sens_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">perf</span> <span class="ow">in</span> <span class="n">list_perf</span><span class="p">:</span>
+        <span class="n">sens_table</span> <span class="o">=</span> <span class="n">perf</span><span class="p">[</span><span class="n">config</span><span class="p">][</span><span class="s1">&#39;sens&#39;</span><span class="p">]</span>
+        <span class="n">new_t</span> <span class="o">=</span> <span class="n">sens_table</span><span class="p">[(</span><span class="n">sens_table</span><span class="p">[</span><span class="s1">&#39;ENERG_LO&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.99</span> <span class="o">*</span> <span class="n">emin</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">sens_table</span><span class="p">[</span><span class="s1">&#39;ENERG_HI&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">1.01</span> <span class="o">*</span> <span class="n">emax</span><span class="p">)]</span>
+        <span class="n">sens_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_t</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">sensi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sens_list</span><span class="p">):</span>
+
+        <span class="n">plot_sensitivity_residuals</span><span class="p">(</span>
+            <span class="n">ax_res</span><span class="p">,</span>
+            <span class="n">sensi</span><span class="p">,</span>
+            <span class="n">perf_ref</span><span class="p">[</span><span class="n">config</span><span class="p">][</span><span class="s1">&#39;sens&#39;</span><span class="p">],</span>
+            <span class="o">**</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="n">list_color</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="s1">&#39;lw&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">frac</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">]:</span>
+        <span class="n">plot_crab</span><span class="p">(</span><span class="n">ax_sens</span><span class="p">,</span> <span class="n">frac</span><span class="p">)</span>
+
+    <span class="n">sens_min</span> <span class="o">=</span><span class="p">[</span><span class="n">sensi</span><span class="p">[</span><span class="s1">&#39;SENSITIVITY&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="k">for</span> <span class="n">sensi</span> <span class="ow">in</span> <span class="n">sens_list</span><span class="p">]</span>
+    <span class="n">sens_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sens_min</span><span class="p">)</span>
+
+    <span class="n">sens_max</span> <span class="o">=</span><span class="p">[</span><span class="n">sensi</span><span class="p">[</span><span class="s1">&#39;SENSITIVITY&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="k">for</span> <span class="n">sensi</span> <span class="ow">in</span> <span class="n">sens_list</span><span class="p">]</span>
+    <span class="n">sens_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sens_max</span><span class="p">)</span>
+
+    <span class="n">ax_sens</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mf">0.02</span><span class="p">,</span> <span class="mi">200</span><span class="p">])</span>
+    <span class="n">ax_sens</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="n">sens_min</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">sens_max</span> <span class="o">*</span> <span class="mi">5</span><span class="p">])</span>
+    <span class="n">ax_sens</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s1">&#39;large&#39;</span><span class="p">)</span>
+    <span class="n">ax_sens</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">ax_sens</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([])</span>
+    <span class="n">ax_sens</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+    <span class="n">ax_sens</span><span class="o">.</span><span class="n">loglog</span><span class="p">()</span>
+    <span class="n">ax_sens</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Sensitivity [erg / (cm2 s)]&#39;</span><span class="p">)</span>
+
+    <span class="n">ax_res</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="o">-</span><span class="mf">1e9</span><span class="p">,</span> <span class="mf">1e9</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="o">**</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;darkgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;lw&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+    <span class="n">ax_res</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+    <span class="n">ax_res</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+    <span class="n">ax_res</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Betterness&#39;</span><span class="p">)</span>
+    <span class="n">ax_res</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Reco energy [TeV]&#39;</span><span class="p">)</span>
+    <span class="n">ax_res</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">12.5</span><span class="p">])</span>
+    <span class="n">ax_res</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1">## Text for sensitivity</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Obs. time: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;$</span><span class="se">\\</span><span class="s2">alpha$=0.2 and $</span><span class="se">\\</span><span class="s2">sigma$=5</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;Syst$_</span><span class="si">{BKG}</span><span class="s2">$=5</span><span class="si">% a</span><span class="s2">nd $</span><span class="se">\\</span><span class="s2">gamma_</span><span class="si">{min}</span><span class="s2">$=10&quot;</span>
+    <span class="n">ax_sens</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+            <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.8</span> <span class="p">,</span> <span class="n">text</span><span class="p">,</span>
+            <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+            <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span>
+            <span class="n">multialignment</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+            <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">fontsize</span><span class="o">=</span><span class="s1">&#39;large&#39;</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="n">ax_sens</span><span class="o">.</span><span class="n">transAxes</span>
+    <span class="p">)</span>
+
+    <span class="n">ax_sens</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+    <span class="n">gs</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ax_sens</span><span class="p">,</span> <span class="n">ax_res</span>
+
+<span class="k">def</span> <span class="nf">plot_table</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">colname</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">energy_range</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simple function to plot an astropy table&quot;&quot;&quot;</span>
+    <span class="n">centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;ENERG_LO&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;ENERG_HI&#39;</span><span class="p">])</span>
+    <span class="n">bin_width</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;ENERG_HI&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;ENERG_LO&#39;</span><span class="p">]</span>
+    <span class="n">err_plus</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;ENERG_HI&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">centers</span>
+    <span class="n">err_minus</span> <span class="o">=</span> <span class="n">centers</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;ENERG_LO&#39;</span><span class="p">]</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">colname</span><span class="p">]</span>
+
+    <span class="c1"># Selection bins in the energy range</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="p">(</span><span class="n">centers</span> <span class="o">&gt;=</span> <span class="n">energy_range</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">centers</span> <span class="o">&lt;=</span> <span class="n">energy_range</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">centers</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">xerr</span><span class="o">=</span><span class="p">(</span><span class="n">err_minus</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">err_plus</span><span class="p">[</span><span class="n">idx</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax</span>
+
+<span class="k">def</span> <span class="nf">plot_energy_response</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">rmf</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">energy_range</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simple function to plot the energy resolution (Gammapy)&quot;&quot;&quot;</span>
+    <span class="n">energy</span> <span class="o">=</span> <span class="n">rmf</span><span class="o">.</span><span class="n">e_true</span><span class="o">.</span><span class="n">nodes</span>
+    <span class="n">bias</span> <span class="o">=</span> <span class="n">rmf</span><span class="o">.</span><span class="n">get_bias</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+    <span class="n">resol</span> <span class="o">=</span> <span class="n">rmf</span><span class="o">.</span><span class="n">get_resolution</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="p">(</span><span class="n">energy</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;=</span> <span class="n">energy_range</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">energy</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="n">energy_range</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">energy</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">bias</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">energy</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">resol</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ax</span>
+
+<span class="k">def</span> <span class="nf">plot_sensitivity</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">energy_range</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">plot_table</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="s1">&#39;SENSITIVITY&#39;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">energy_range</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ax</span>
+
+<span class="k">def</span> <span class="nf">plot_sensitivity_residuals</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">table_sens</span><span class="p">,</span> <span class="n">table_ref</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">emin</span> <span class="o">=</span> <span class="n">table_ref</span><span class="p">[</span><span class="s1">&#39;ENERG_LO&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">emax</span> <span class="o">=</span> <span class="n">table_ref</span><span class="p">[</span><span class="s1">&#39;ENERG_HI&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">table_sens</span><span class="p">[(</span><span class="n">table_sens</span><span class="p">[</span><span class="s1">&#39;ENERG_LO&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.99</span> <span class="o">*</span> <span class="n">emin</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">table_sens</span><span class="p">[</span><span class="s1">&#39;ENERG_HI&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">1.01</span> <span class="o">*</span> <span class="n">emax</span><span class="p">)]</span>
+
+    <span class="n">t_ratio</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+    <span class="n">t_ratio</span><span class="p">[</span><span class="s1">&#39;ENERG_LO&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;ENERG_LO&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+    <span class="n">t_ratio</span><span class="p">[</span><span class="s1">&#39;ENERG_HI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;ENERG_HI&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+    <span class="n">t_ratio</span><span class="p">[</span><span class="s1">&#39;RATIO&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;SENSITIVITY&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">table_ref</span><span class="p">[</span><span class="s1">&#39;SENSITIVITY&#39;</span><span class="p">]))</span>
+
+    <span class="n">plot_table</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t_ratio</span><span class="p">,</span> <span class="n">colname</span><span class="o">=</span><span class="s1">&#39;RATIO&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">energy_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">300.</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ax</span>
+
+<span class="k">def</span> <span class="nf">plot_crab</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">fraction</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot Crab spectra&quot;&quot;&quot;</span>
+    <span class="n">crab_model</span> <span class="o">=</span> <span class="n">CrabSpectrum</span><span class="p">(</span><span class="s1">&#39;hegra&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">model</span>
+    <span class="n">reference</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">TeV</span>
+    <span class="n">amplitude</span> <span class="o">=</span> <span class="n">crab_model</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">reference</span><span class="p">)</span> <span class="o">*</span> <span class="n">fraction</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">CrabSpectrum</span><span class="p">(</span><span class="s1">&#39;hegra&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">TeV</span>
+    <span class="n">flux</span> <span class="o">=</span> <span class="n">PowerLaw</span><span class="p">(</span><span class="n">amplitude</span><span class="o">=</span><span class="n">amplitude</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">reference</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)(</span><span class="n">energy</span><span class="p">)</span>
+    <span class="n">e2flux</span> <span class="o">=</span> <span class="p">(</span><span class="n">flux</span> <span class="o">*</span> <span class="n">energy</span> <span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">TeV</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;erg&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">energy</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">e2flux</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Load-…">
+<h2>Load …<a class="headerlink" href="#Load-…" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">First we check if a <em>plots</em> folder exists already.</div>
+<div class="line">If not, we create it.</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;./plots_DL3&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">obs_time</span> <span class="o">=</span> <span class="s1">&#39;50h&#39;</span>
+<span class="n">site</span> <span class="o">=</span> <span class="s2">&quot;North&quot;</span>
+<span class="n">array</span> <span class="o">=</span> <span class="s1">&#39;full_array&#39;</span>
+<span class="n">zenith</span> <span class="o">=</span> <span class="s1">&#39;20&#39;</span>
+<span class="n">azimuth</span> <span class="o">=</span> <span class="s1">&#39;180&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="…-protopipe’s-performance">
+<h3>… protopipe’s performance<a class="headerlink" href="#…-protopipe’s-performance" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Please, if you modify this notebook in a PR cleanup these two variables</span>
+<span class="n">parent</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="c1"># full path of analyses folder</span>
+<span class="n">analysis</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<span class="n">opti</span> <span class="o">=</span> <span class="s1">&#39;opti&#39;</span>  <span class="c1"># r68, fixed, opti</span>
+<span class="n">filenames</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;100s&#39;</span><span class="p">:</span> <span class="s1">&#39;irf_tail_ThSq_opti_Time100.00s/irf.fits.gz&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;30m&#39;</span><span class="p">:</span> <span class="s1">&#39;irf_tail_ThSq_opti_Time30.00min/irf.fits.gz&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;5h&#39;</span><span class="p">:</span> <span class="s1">&#39;irf_tail_ThSq_opti_Time5.00h/irf.fits.gz&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">opti</span><span class="p">),</span>
+             <span class="s1">&#39;50h&#39;</span><span class="p">:</span> <span class="s1">&#39;irf_tail_ThSq_opti_Time50.00h/irf.fits.gz&#39;</span><span class="p">}</span>
+
+<span class="c1"># Full array performance</span>
+<span class="n">indir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{parent}</span><span class="s2">/</span><span class="si">{analysis}</span><span class="s2">/data/DL3&quot;</span>
+<span class="n">perf</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">filenames</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="n">perf</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_performance</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">indir</span><span class="p">,</span> <span class="n">filenames</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="…-ASWG’s-performance">
+<h3>… ASWG’s performance<a class="headerlink" href="#…-ASWG’s-performance" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">indir</span> <span class="o">=</span> <span class="s1">&#39;./reference_data/aswg/point-like/LaPalma_20_South/&#39;</span>
+<span class="n">indir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">indir</span><span class="p">)</span>
+
+<span class="n">filenames</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;100s&#39;</span><span class="p">:</span> <span class="s1">&#39;CTA-Performance-North-20deg-S-onaxis-100s_20170627.fits.gz&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;30m&#39;</span><span class="p">:</span> <span class="s1">&#39;CTA-Performance-North-20deg-S-onaxis-30m_20170627.fits.gz&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;5h&#39;</span><span class="p">:</span> <span class="s1">&#39;CTA-Performance-North-20deg-S-onaxis-05h_20170627.fits.gz&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;50h&#39;</span><span class="p">:</span> <span class="s1">&#39;CTA-Performance-North-20deg-S-onaxis-50h_20170627.fits.gz&#39;</span><span class="p">}</span>
+<span class="n">perf_mars_fullarray</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">filenames</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="n">perf_mars_fullarray</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_performance</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">indir</span><span class="p">,</span> <span class="n">filenames</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="…-Requirements">
+<h3>… Requirements<a class="headerlink" href="#…-Requirements" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">indir</span> <span class="o">=</span> <span class="s1">&#39;./reference_data/requirements/&#39;</span>
+
+<span class="c1"># Full array</span>
+<span class="n">infiles</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sens</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/</span><span class="si">{site}</span><span class="s1">-</span><span class="si">{obs_time}</span><span class="s1">.dat&#39;</span><span class="p">)</span> <span class="c1"># 30 min</span>
+<span class="n">requirements</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">infiles</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="n">requirements</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">indir</span> <span class="o">+</span> <span class="n">infiles</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+<span class="n">requirements</span><span class="p">[</span><span class="s1">&#39;sens&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="n">Column</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">requirements</span><span class="p">[</span><span class="s1">&#39;sens&#39;</span><span class="p">][</span><span class="s1">&#39;col1&#39;</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ENERGY&#39;</span><span class="p">))</span>
+<span class="n">requirements</span><span class="p">[</span><span class="s1">&#39;sens&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="n">Column</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">requirements</span><span class="p">[</span><span class="s1">&#39;sens&#39;</span><span class="p">][</span><span class="s1">&#39;col2&#39;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;SENSITIVITY&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Instrument-Response-Functions">
+<h2>Instrument Response Functions<a class="headerlink" href="#Instrument-Response-Functions" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+
+<span class="n">ax_bkg</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">ax_area</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">ax_psf</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">ax_resol</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">ax_bkg</span><span class="p">,</span> <span class="n">ax_area</span><span class="p">,</span> <span class="n">ax_psf</span><span class="p">,</span> <span class="n">ax_resol</span><span class="p">]</span>
+
+<span class="n">plot_irf</span><span class="p">(</span><span class="n">axes</span><span class="o">=</span><span class="n">axes</span><span class="p">,</span> <span class="n">perf</span><span class="o">=</span><span class="n">perf</span><span class="p">[</span><span class="n">obs_time</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Full array (protopipe)&quot;</span><span class="p">,</span> <span class="n">energy_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">51.</span><span class="p">],</span> <span class="o">**</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;darkgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;lw&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="n">plot_irf</span><span class="p">(</span><span class="n">axes</span><span class="o">=</span><span class="n">axes</span><span class="p">,</span> <span class="n">perf</span><span class="o">=</span><span class="n">perf_mars_fullarray</span><span class="p">[</span><span class="n">obs_time</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Full array (MARS)&quot;</span><span class="p">,</span> <span class="n">energy_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">51.</span><span class="p">],</span> <span class="o">**</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;darkblue&#39;</span><span class="p">,</span> <span class="s1">&#39;lw&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mf">0.02</span><span class="p">,</span> <span class="mi">200</span><span class="p">])</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;./plots_DL3/IRFs_</span><span class="si">{site}</span><span class="s2">_</span><span class="si">{array}</span><span class="s2">_</span><span class="si">{obs_time}</span><span class="s2">.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/michele/Applications/miniconda3/envs/protopipe/lib/python3.7/site-packages/astropy/units/quantity.py:464: RuntimeWarning: invalid value encountered in true_divide
+  result = super().__array_ufunc__(function, method, *arrays, **kwargs)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/contribute_benchmarks_benchmarks_DL3_IRFs_and_sensitivity_18_1.png" src="../../_images/contribute_benchmarks_benchmarks_DL3_IRFs_and_sensitivity_18_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Sensitivity">
+<h2>Sensitivity<a class="headerlink" href="#Sensitivity" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">minEnergy</span> <span class="o">=</span> <span class="mf">2.e-2</span>
+<span class="n">maxEnergy</span> <span class="o">=</span> <span class="mf">2.e2</span>
+
+<span class="n">ax_sens</span><span class="p">,</span> <span class="n">ax_res</span> <span class="o">=</span> <span class="n">plot_sensitivity_comparison</span><span class="p">(</span>
+    <span class="n">list_perf</span><span class="o">=</span><span class="p">[</span><span class="n">perf</span><span class="p">,</span> <span class="n">perf_mars_fullarray</span><span class="p">],</span>
+    <span class="n">list_label</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;This work (&gt;=3 Tels)&#39;</span><span class="p">,</span> <span class="s1">&#39;MARS analysis&#39;</span><span class="p">],</span>
+    <span class="n">list_color</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;darkorange&#39;</span><span class="p">,</span> <span class="s1">&#39;darkblue&#39;</span><span class="p">],</span>
+    <span class="n">list_erange</span><span class="o">=</span><span class="p">[[</span><span class="n">minEnergy</span><span class="p">,</span> <span class="n">maxEnergy</span><span class="p">],</span> <span class="p">[</span><span class="n">minEnergy</span><span class="p">,</span> <span class="n">maxEnergy</span><span class="p">]],</span>
+    <span class="n">perf_ref</span><span class="o">=</span><span class="n">perf</span><span class="p">,</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">obs_time</span><span class="p">,</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{site}</span><span class="s2">_</span><span class="si">{array}</span><span class="s2">_</span><span class="si">{obs_time}</span><span class="s2">_zd</span><span class="si">{zenith}</span><span class="s2">_az</span><span class="si">{azimuth}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">ax_sens</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">requirements</span><span class="p">[</span><span class="s1">&#39;sens&#39;</span><span class="p">][</span><span class="s1">&#39;ENERGY&#39;</span><span class="p">],</span>
+             <span class="n">requirements</span><span class="p">[</span><span class="s1">&#39;sens&#39;</span><span class="p">][</span><span class="s1">&#39;SENSITIVITY&#39;</span><span class="p">],</span>
+             <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
+             <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span>
+             <span class="n">lw</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+             <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Requirements&#39;</span><span class="p">)</span>
+
+<span class="n">ax_sens</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s1">&#39;large&#39;</span><span class="p">)</span>
+
+<span class="n">ax_res</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">minEnergy</span><span class="p">,</span> <span class="n">maxEnergy</span><span class="p">])</span>
+<span class="n">ax_res</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>
+
+<span class="n">ax_sens</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">minEnergy</span><span class="p">,</span> <span class="n">maxEnergy</span><span class="p">])</span>
+<span class="n">ax_sens</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mf">5.e-14</span><span class="p">,</span> <span class="mf">1.e-9</span><span class="p">])</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;./plots_DL3/sensitivity_</span><span class="si">{site}</span><span class="s2">_</span><span class="si">{array}</span><span class="s2">_</span><span class="si">{obs_time}</span><span class="s2">.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/michele/Applications/miniconda3/envs/protopipe/lib/python3.7/site-packages/ipykernel_launcher.py:30: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/contribute_benchmarks_benchmarks_DL3_IRFs_and_sensitivity_20_1.png" src="../../_images/contribute_benchmarks_benchmarks_DL3_IRFs_and_sensitivity_20_1.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../AUTHORS.html" class="btn btn-neutral float-right" title="Authors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="benchmarks_DL2_particle-classification.html" class="btn btn-neutral float-left" title="Particle classification" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Michele Peresano
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

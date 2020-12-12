@@ -1,0 +1,19 @@
+CutsApplicator
+==============
+
+.. currentmodule:: protopipe.perf
+
+.. autoclass:: CutsApplicator
+   :show-inheritance:
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+
+      ~CutsApplicator.apply_cuts
+      ~CutsApplicator.apply_cuts_on_data
+
+   .. rubric:: Methods Documentation
+
+   .. automethod:: apply_cuts
+   .. automethod:: apply_cuts_on_data

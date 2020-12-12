@@ -1,0 +1,25 @@
+CutsDiagnostic
+==============
+
+.. currentmodule:: protopipe.perf
+
+.. autoclass:: CutsDiagnostic
+   :show-inheritance:
+
+   .. rubric:: Methods Summary
+
+   .. autosummary::
+
+      ~CutsDiagnostic.get_text
+      ~CutsDiagnostic.plot_diagnostics
+      ~CutsDiagnostic.plot_efficiencies_vs_score
+      ~CutsDiagnostic.plot_optimisation_summary
+      ~CutsDiagnostic.plot_rates_vs_score
+
+   .. rubric:: Methods Documentation
+
+   .. automethod:: get_text
+   .. automethod:: plot_diagnostics
+   .. automethod:: plot_efficiencies_vs_score
+   .. automethod:: plot_optimisation_summary
+   .. automethod:: plot_rates_vs_score

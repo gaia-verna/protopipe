@@ -1,0 +1,854 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Direction reconstruction &mdash; protopipe 0.3.0-dev0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> protopipe
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.3.0-dev0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/index.html">Workflow and usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">How to contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../AUTHORS.html">Authors</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Structure</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pipeline/index.html">pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mva/index.html">mva</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../perf/index.html">perf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scripts/index.html">scripts</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">protopipe</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Direction reconstruction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/contribute/benchmarks/benchmarks_DL2_direction-reconstruction.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="Direction-reconstruction">
+<h1>Direction reconstruction<a class="headerlink" href="#Direction-reconstruction" title="Permalink to this headline">¶</a></h1>
+<p>Description here</p>
+<div class="section" id="Imports">
+<h2>Imports<a class="headerlink" href="#Imports" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Functions">
+<h2>Functions<a class="headerlink" href="#Functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Load-data-with-pandas">
+<h3>Load data with pandas<a class="headerlink" href="#Load-data-with-pandas" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">load_reset_dl1_pandas</span><span class="p">(</span><span class="n">indir</span> <span class="o">=</span> <span class="s2">&quot;./&quot;</span><span class="p">,</span> <span class="n">fileName</span> <span class="o">=</span> <span class="s2">&quot;dl1_tail_gamma_z20_az180_LaPalma_baseline_run100_withMono.h5&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;(Re)load the file containing DL1(a) data and extract the data per telescope type.&quot;&quot;&quot;</span>
+    <span class="c1"># load DL1 images</span>
+    <span class="n">data_LST</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{indir}</span><span class="s2">/</span><span class="si">{fileName}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;/feature_events_LSTCam&quot;</span><span class="p">)</span>
+    <span class="n">data_MST</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{indir}</span><span class="s2">/</span><span class="si">{fileName}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;/feature_events_NectarCam&quot;</span><span class="p">)</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="n">config</span> <span class="c1"># all generated plots will have this as a suffix in their name</span>
+    <span class="k">return</span> <span class="n">data_LST</span><span class="p">,</span> <span class="n">data_MST</span><span class="p">,</span> <span class="n">suffix</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Quantities-to-plot">
+<h3>Quantities to plot<a class="headerlink" href="#Quantities-to-plot" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">dl1_quantities</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A dictionary of the quantities available with this format of DL1 in protopipe.</span>
+
+<span class="sd">    WARNING: for the moment protopipe uses one cleaning algorithm (biggest cluster),</span>
+<span class="sd">    even though it allows for two;</span>
+<span class="sd">    this means that all the quantities with the suffix &quot;_reco&quot; are the same as those without suffix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">!=</span><span class="n">pandas</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+
+        <span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span>
+
+            <span class="s2">&quot;Intensity [#phe]&quot;</span>   <span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;sum_signal_cam&quot;</span><span class="p">),</span> <span class="c1"># aka SIZE</span>
+            <span class="s2">&quot;Width [m]&quot;</span>          <span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;width&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;Length [m]&quot;</span>         <span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;length&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;Skewness&quot;</span>           <span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;skewness&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;Kurtosis&quot;</span>           <span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;kurtosis&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;H_max [m]&quot;</span>          <span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;h_max&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;n_pixel&quot;</span>            <span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;n_pixel&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;Ellipticity&quot;</span>        <span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;ellipticity&quot;</span><span class="p">),</span>
+<span class="c1">#             &quot;Leakage 1&quot;          : data.col(&quot;leak1_reco&quot;)  # see cta-observatory/protopipe#41</span>
+            <span class="s2">&quot;psi&quot;</span>                <span class="p">:</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;psi_reco&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">rad</span><span class="p">),</span>
+            <span class="s2">&quot;cog_x&quot;</span>              <span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;cog_x&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;cog_y&quot;</span>              <span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;cog_y&quot;</span><span class="p">),</span>
+
+        <span class="p">}</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span>
+
+            <span class="s2">&quot;Intensity [#phe]&quot;</span>   <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;sum_signal_cam&quot;</span><span class="p">],</span> <span class="c1"># aka SIZE</span>
+            <span class="s2">&quot;Width [m]&quot;</span>          <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;Length [m]&quot;</span>         <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;length&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;Skewness&quot;</span>           <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;skewness&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;Kurtosis&quot;</span>           <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;kurtosis&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;H_max [m]&quot;</span>          <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;h_max&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;n_pixel&quot;</span>            <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;n_pixel&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;Ellipticity&quot;</span>        <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;ellipticity&quot;</span><span class="p">],</span>
+    <span class="c1">#         &quot;Leakage 1&quot;          : data.col(&quot;leak1_reco&quot;)  # see cta-observatory/protopipe#41</span>
+            <span class="s2">&quot;psi&quot;</span>                <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;psi_reco&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;cog_x&quot;</span>              <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;cog_x&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;cog_y&quot;</span>              <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;cog_y&quot;</span><span class="p">],</span>
+
+        <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">dictionary</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Add-statistical-information-to-a-plot">
+<h3>Add statistical information to a plot<a class="headerlink" href="#Add-statistical-information-to-a-plot" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">add_stats</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add a textbox containing statistical information.&quot;&quot;&quot;</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">median</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+    <span class="n">textstr</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span>
+        <span class="sa">r</span><span class="s1">&#39;$\mu=</span><span class="si">%.2f</span><span class="s1">$&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="p">),</span>
+        <span class="sa">r</span><span class="s1">&#39;$\mathrm</span><span class="si">{median}</span><span class="s1">=</span><span class="si">%.2f</span><span class="s1">$&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">median</span><span class="p">,</span> <span class="p">),</span>
+        <span class="sa">r</span><span class="s1">&#39;$\sigma=</span><span class="si">%.2f</span><span class="s1">$&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="p">)))</span>
+
+    <span class="c1"># these are matplotlib.patch.Patch properties</span>
+    <span class="n">props</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">boxstyle</span><span class="o">=</span><span class="s1">&#39;round&#39;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;wheat&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="c1"># place a text box in upper left in axes coords</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.70</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">,</span>
+            <span class="n">textstr</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+            <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+            <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+            <span class="n">bbox</span><span class="o">=</span><span class="n">props</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Load-data">
+<h2>Load data<a class="headerlink" href="#Load-data" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># fill with the correct path, filename of the generated file in your system</span>
+<span class="n">data_LST</span><span class="p">,</span> <span class="n">data_MST</span><span class="p">,</span> <span class="n">config</span> <span class="o">=</span> <span class="n">load_reset_dl1_pandas</span><span class="p">()</span>
+<span class="n">cameras</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;LSTCam&quot;</span><span class="p">,</span> <span class="s2">&quot;NectarCam&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Get DL1 quantities as numpy arrays or pandas.Dataframe columns</span>
+<span class="n">DL1_LST</span> <span class="o">=</span> <span class="n">dl1_quantities</span><span class="p">(</span><span class="n">data_LST</span><span class="p">)</span>
+<span class="n">DL1_MST</span> <span class="o">=</span> <span class="n">dl1_quantities</span><span class="p">(</span><span class="n">data_MST</span><span class="p">)</span>
+<span class="n">DL1</span> <span class="o">=</span> <span class="p">[</span><span class="n">DL1_LST</span><span class="p">,</span> <span class="n">DL1_MST</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Add-secondary-variables">
+<h3>Add secondary variables<a class="headerlink" href="#Add-secondary-variables" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># add miss**2 to DL1 dictionaries in pandas format</span>
+<span class="k">for</span> <span class="n">camera_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)):</span>
+    <span class="n">DL1</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="s2">&quot;miss2 [deg**2]&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">miss_deg</span><span class="p">[</span><span class="n">camera_index</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Plots-and-benchmarks">
+<h2>Plots and benchmarks<a class="headerlink" href="#Plots-and-benchmarks" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">First we check if a <em>plots</em> folder exists already.</div>
+<div class="line">If not, we create it.</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;./plots_direction_reconstruction&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Direction-Look-up-tables">
+<h3>Direction Look-up tables<a class="headerlink" href="#Direction-Look-up-tables" title="Permalink to this headline">¶</a></h3>
+<p>PROBLEM: in CTA-MARS the DL&#64; events are weighted using the ‘miss’ parameter, which we don’t have straight from the DL1 file.</p>
+<p>We can calculate it: _miss__ is just the minimum distance between the true gamma-ray position and the image axis. we have both the x-axis of the camera and the angle between it and the image axis.</p>
+<p>TODO: * decide if calculating it here or directly from ctapipe/protopipe</p>
+<div class="section" id="Produce-tables">
+<h4>Produce tables<a class="headerlink" href="#Produce-tables" title="Permalink to this headline">¶</a></h4>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">lst_optics</span> <span class="o">=</span> <span class="n">OpticsDescription</span><span class="o">.</span><span class="n">from_name</span><span class="p">(</span><span class="s2">&quot;LST&quot;</span><span class="p">)</span>
+<span class="n">mst_optics</span> <span class="o">=</span> <span class="n">OpticsDescription</span><span class="o">.</span><span class="n">from_name</span><span class="p">(</span><span class="s2">&quot;MST&quot;</span><span class="p">)</span>
+<span class="n">foc_length_lst</span> <span class="o">=</span> <span class="n">lst_optics</span><span class="o">.</span><span class="n">equivalent_focal_length</span>
+<span class="n">foc_length_mst</span> <span class="o">=</span> <span class="n">mst_optics</span><span class="o">.</span><span class="n">equivalent_focal_length</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># result in meters</span>
+<span class="n">disp_lst</span><span class="p">,</span> <span class="n">miss_lst</span> <span class="o">=</span> <span class="n">camera_to_shower_coordinates</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">data_LST</span><span class="p">[</span><span class="s2">&quot;cog_x&quot;</span><span class="p">],</span> <span class="n">data_LST</span><span class="p">[</span><span class="s2">&quot;cog_y&quot;</span><span class="p">],</span> <span class="n">data_LST</span><span class="p">[</span><span class="s2">&quot;psi&quot;</span><span class="p">])</span>
+<span class="n">disp_mst</span><span class="p">,</span> <span class="n">miss_mst</span> <span class="o">=</span> <span class="n">camera_to_shower_coordinates</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">data_MST</span><span class="p">[</span><span class="s2">&quot;cog_x&quot;</span><span class="p">],</span> <span class="n">data_MST</span><span class="p">[</span><span class="s2">&quot;cog_y&quot;</span><span class="p">],</span> <span class="n">data_MST</span><span class="p">[</span><span class="s2">&quot;psi&quot;</span><span class="p">])</span>
+<span class="c1"># convert miss parameter from meters to degrees (WARNING: calculation probably approximate or even wrong)</span>
+<span class="n">miss_lst_deg</span> <span class="o">=</span> <span class="n">distance_deg</span><span class="p">(</span><span class="n">miss_lst</span><span class="p">,</span> <span class="n">foc_length_lst</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="n">miss_mst_deg</span> <span class="o">=</span> <span class="n">distance_deg</span><span class="p">(</span><span class="n">miss_mst</span><span class="p">,</span> <span class="n">foc_length_mst</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="n">miss_deg</span> <span class="o">=</span> <span class="p">[</span><span class="n">miss_lst_deg</span><span class="p">,</span> <span class="n">miss_mst_deg</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># build LUTs of Intensity and w/l</span>
+<span class="n">H</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">camera_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">))]</span>
+<span class="n">xedges</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">camera_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">))]</span>
+<span class="n">yedges</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">camera_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">))]</span>
+<span class="n">nbins_x</span> <span class="o">=</span> <span class="mi">13</span>
+<span class="n">nbins_y</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="k">for</span> <span class="n">camera_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)):</span>
+    <span class="n">H</span><span class="p">[</span><span class="n">camera_index</span><span class="p">],</span> <span class="n">xedges</span><span class="p">[</span><span class="n">camera_index</span><span class="p">],</span> <span class="n">yedges</span><span class="p">[</span><span class="n">camera_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">DL1</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="s2">&quot;Intensity [#phe]&quot;</span><span class="p">]),</span>
+                     <span class="p">(</span><span class="n">DL1</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="s2">&quot;Ellipticity&quot;</span><span class="p">]),</span> <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="n">nbins_x</span><span class="p">,</span><span class="n">nbins_y</span><span class="p">],</span> <span class="nb">range</span><span class="o">=</span><span class="p">[[</span><span class="mf">1.</span><span class="p">,</span><span class="mf">6.</span><span class="p">],[</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">]])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># calculate average miss*2</span>
+<span class="n">nbins_x</span> <span class="o">=</span> <span class="mi">13</span>
+<span class="n">nbins_y</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">average_miss2</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">13</span><span class="p">,</span> <span class="mi">20</span><span class="p">)),</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">13</span><span class="p">,</span> <span class="mi">20</span><span class="p">))]</span>
+<span class="k">for</span> <span class="n">camera_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">x_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbins_x</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">y_bin</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbins_y</span><span class="p">):</span>
+            <span class="n">min_intensity</span> <span class="o">=</span> <span class="n">xedges</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="n">x_bin</span><span class="p">]</span>
+            <span class="n">max_intensity</span> <span class="o">=</span> <span class="n">xedges</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="n">x_bin</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">min_ellipticity</span> <span class="o">=</span> <span class="n">yedges</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="n">y_bin</span><span class="p">]</span>
+            <span class="n">max_ellipticity</span> <span class="o">=</span> <span class="n">yedges</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="n">y_bin</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">intensity</span> <span class="o">=</span> <span class="n">DL1</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="s2">&quot;Intensity [#phe]&quot;</span><span class="p">]</span>
+            <span class="n">ellipticity</span> <span class="o">=</span> <span class="n">DL1</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="s2">&quot;Ellipticity&quot;</span><span class="p">]</span>
+            <span class="n">selected_images</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">min_intensity</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_intensity</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ellipticity</span> <span class="o">&gt;=</span> <span class="n">min_ellipticity</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ellipticity</span> <span class="o">&lt;</span> <span class="n">max_ellipticity</span><span class="p">)</span>
+            <span class="n">filtered_miss2</span> <span class="o">=</span> <span class="n">DL1</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="s2">&quot;miss2 [deg**2]&quot;</span><span class="p">][</span><span class="n">selected_images</span><span class="p">]</span>
+            <span class="n">average_miss2</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="n">x_bin</span><span class="p">][</span><span class="n">y_bin</span><span class="p">]</span> <span class="o">=</span> <span class="n">filtered_miss2</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Plot-as-counts">
+<h4>Plot as counts<a class="headerlink" href="#Plot-as-counts" title="Permalink to this headline">¶</a></h4>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">nbins_x</span> <span class="o">=</span> <span class="mi">13</span>
+<span class="n">nbins_y</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">cameras</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;LSTCam&quot;</span><span class="p">,</span> <span class="s2">&quot;NectarCam&quot;</span><span class="p">]</span>
+<span class="n">LUTs</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">camera_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)):</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;log10(Intensity [&#39;phe&#39;])&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Ellipticity [Width [m] / Length [m]]&quot;</span><span class="p">)</span>
+
+    <span class="n">LUT</span><span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist2d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">DL1</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="s2">&quot;Intensity [#phe]&quot;</span><span class="p">]),</span>
+                     <span class="n">DL1</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="s2">&quot;Ellipticity&quot;</span><span class="p">],</span>
+                   <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="n">nbins_x</span><span class="p">,</span> <span class="n">nbins_y</span><span class="p">],</span>
+                   <span class="nb">range</span><span class="o">=</span><span class="p">[[</span><span class="mf">1.</span><span class="p">,</span><span class="mf">6.</span><span class="p">],[</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">]],</span>
+                   <span class="n">norm</span><span class="o">=</span><span class="n">LogNorm</span><span class="p">(),</span>
+                   <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">rainbow</span><span class="p">,</span>
+                  <span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+
+    <span class="n">LUTs</span><span class="p">[</span><span class="n">camera_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">LUT</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;./plots_direction_reconstruction/directionLUTsCounts_</span><span class="si">{cameras[camera_index]}</span><span class="s2">_protopipe_</span><span class="si">{config}</span><span class="s2">.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Plot-as-weights-with-miss2-(deg2)">
+<h4>Plot as weights with miss<strong>2 (deg</strong>2)<a class="headerlink" href="#Plot-as-weights-with-miss2-(deg2)" title="Permalink to this headline">¶</a></h4>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">nbins_x</span> <span class="o">=</span> <span class="mi">13</span>
+<span class="n">nbins_y</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">cameras</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;LSTCam&quot;</span><span class="p">,</span> <span class="s2">&quot;NectarCam&quot;</span><span class="p">]</span>
+<span class="n">LUTs</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">camera_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)):</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;log10(Intensity [&#39;phe&#39;])&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Ellipticity [Width [m] / Length [m]]&quot;</span><span class="p">)</span>
+
+    <span class="n">miss2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">average_miss2</span><span class="p">[</span><span class="n">camera_index</span><span class="p">])</span>
+
+    <span class="n">LUT</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span>
+                   <span class="n">xedges</span><span class="p">[</span><span class="n">camera_index</span><span class="p">],</span>
+                   <span class="n">yedges</span><span class="p">[</span><span class="n">camera_index</span><span class="p">],</span>
+                   <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">miss2</span><span class="p">),</span>
+                   <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">rainbow</span><span class="p">,</span>
+                   <span class="n">norm</span><span class="o">=</span><span class="n">LogNorm</span><span class="p">(),</span>
+                  <span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+
+    <span class="n">LUTs</span><span class="p">[</span><span class="n">camera_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">LUT</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;./plots_direction_reconstruction/directionLUTsMiss2_</span><span class="si">{cameras[camera_index]}</span><span class="s2">_protopipe_</span><span class="si">{config}</span><span class="s2">.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;log10(intensity)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;miss**2 (deg**2)&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">camera_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)):</span>
+
+    <span class="n">bincenters</span> <span class="o">=</span> <span class="p">(</span><span class="n">xedges</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">xedges</span><span class="p">[</span><span class="n">camera_index</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span>
+    <span class="c1"># bin 9 corresponds to ellipticity between 0.45 and 0.5</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bincenters</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">average_miss2</span><span class="p">[</span><span class="n">camera_index</span><span class="p">])[:,</span><span class="mi">9</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{cameras[camera_index]}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;./plots_direction_reconstruction/directionLUTsMiss2_slice_</span><span class="si">{cameras[camera_index]}</span><span class="s2">_protopipe_</span><span class="si">{config}</span><span class="s2">.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Angular-resolution-(68%-containment-of-the-PSF)-vs-true-energy">
+<h3>Angular resolution (68% containment of the PSF) vs true energy<a class="headerlink" href="#Angular-resolution-(68%-containment-of-the-PSF)-vs-true-energy" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="Reconstruction-efficiency-relative-to-the-number-of-stereoscopic-triggers">
+<h3>Reconstruction efficiency relative to the number of stereoscopic triggers<a class="headerlink" href="#Reconstruction-efficiency-relative-to-the-number-of-stereoscopic-triggers" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="Distribution-of-true-core-positions-for-reconstructed-events">
+<h3>Distribution of true core positions for reconstructed events<a class="headerlink" href="#Distribution-of-true-core-positions-for-reconstructed-events" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="Shower-core-reconstruction">
+<h3>Shower core reconstruction<a class="headerlink" href="#Shower-core-reconstruction" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="Shower-maximum-height-reconstruction">
+<h3>Shower maximum height reconstruction<a class="headerlink" href="#Shower-maximum-height-reconstruction" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Michele Peresano
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
